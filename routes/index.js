@@ -4,9 +4,9 @@ const router = express.Router();
 const { checkAuth } = require("../middlewares/checkAuth");
 // routes
 const authRoutes = require("./authRoutes");
-const projectRoutes = require("./projectRoutes");
+const boardRoutes = require("./boardRoutes");
 
 router.use("/api/account", authRoutes);
-router.use("/api/project", checkAuth, projectRoutes);
+router.use("/api/board", checkAuth, boardRoutes);
 
 module.exports = router;

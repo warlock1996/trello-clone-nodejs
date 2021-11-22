@@ -7,6 +7,7 @@ const UserSchema = new mongoose.Schema({
 	email_verified_at: { type: Date, default: null },
 	token: { type: String, default: null},
 	address: String,
+	boards: Array
 });
 
 module.exports = mongoose.model("User", UserSchema);

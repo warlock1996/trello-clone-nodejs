@@ -6,7 +6,7 @@ const asyncVerify = util.promisify(jwt.verify);
 
 exports.sign = async (payload, options = {}) => {
 	return await asyncSign(payload, process.env.JWT_SECRET, {
-		expiresIn: 5000,
+		expiresIn: process.env.JWT_EXPIRY,
 		...options,
 	});
 };
