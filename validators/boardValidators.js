@@ -1,11 +1,12 @@
 const { body, param } = require("express-validator");
-const Board = require("../models/Board");
+const { Board } = require("../models/Board");
 const handleValidationResult = require("./handleValidationResult");
 
 exports.validateCreateBoard = [
-	body("name").exists().isString().isLength({ min: "3", max: "20" }).custom(async (value) => {
-		const board = await Board.findOne({ name: value })
-		if (board) return Promise.reject('board name already exists')
+	body("name").exists().isString().isLength({ min: "3", max: "20" }).custom((value, { req }) => {
+		if (req.user.boards.find(b => b.name == value)) return false
+
+		return true
 	}),
 	handleValidationResult,
 ];
@@ -15,13 +16,18 @@ exports.validateEditBoard = [
 		.exists()
 		.bail()
 		.isString()
-		.custom(async (value, { req }) => {
-			const board = await Board.findById(value);
-			if (!board) return Promise.reject("Board not found !");
-			if (board.name === req.body.name) return Promise.reject("Board should have new name")
-			req.board = board
-		}),
-	body("name").exists().isString().isLength({ min: "3", max: "20" }),
+		.custom((value, { req }) => {
+			const boardIndex = req.user.boards.findIndex(b => b._id == value)
+			if (boardIndex === -1) return false
+
+			req.boardIndex = boardIndex
+			return true
+
+		}).withMessage("board not found !"),
+	body("name").exists().isString().isLength({ min: "3", max: "20" }).custom((value, { req }) => {
+		if (req.user.boards[req.boardIndex]['name'] === value) return false
+		else return true
+	}).withMessage("board already exists !"),
 	handleValidationResult,
 ];
 
@@ -30,10 +36,11 @@ exports.validateDeleteBoard = [
 		.exists()
 		.bail()
 		.isString()
-		.custom(async (value, { req }) => {
-			const board = await Board.findById(value);
-			if (!board) return Promise.reject("Board not found !");
-			req.board = board
-		}),
+		.custom((value, { req }) => {
+			const boardIndex = req.user.boards.findIndex(b => b._id == value)
+			if (boardIndex === -1) return false
+
+			return true
+		}).withMessage('board not found !'),
 	handleValidationResult,
 ]

@@ -1,5 +1,5 @@
 const User = require("../models/User")
-const Board = require("../models/Board")
+const { Board } = require("../models/Board")
 
 exports.handleCreateBoard = async (req, res) => {
     try {
@@ -7,8 +7,7 @@ exports.handleCreateBoard = async (req, res) => {
         const board = new Board({
             name: req.body.name
         })
-        await board.save()
-        user.boards.push(board._id)
+        user.boards.push(board)
         await user.save()
         res.json({
             error: false,
@@ -21,9 +20,10 @@ exports.handleCreateBoard = async (req, res) => {
 
 exports.handleEditBoard = async (req, res) => {
     try {
-        const board = req.board
-        board.name = req.body.name
-        await board.save()
+
+        const user = req.user
+        user.boards[req.boardIndex]['name'] = req.body.name
+        await user.save()
         res.json({
             error: false,
             message: 'success'
@@ -34,11 +34,9 @@ exports.handleEditBoard = async (req, res) => {
 };
 exports.handleDeleteBoard = async (req, res) => {
     try {
-        const board = req.board
         const user = req.user
-        user.boards = user.boards.filter((b) => b != board._id.toString())
+        user.boards = user.boards.filter((b) => b._id != req.params.id)
         await user.save()
-        await board.delete()
         res.json({
             error: false,
             message: "board deleted !"
