@@ -6,9 +6,12 @@ const { checkAuth } = require("../middlewares/checkAuth");
 const authRoutes = require("./authRoutes");
 const boardRoutes = require("./boardRoutes");
 const listRoutes = require("./listRoutes");
+const taskRoutes = require("./taskRoutes")
 
 router.use("/api/account", authRoutes);
 router.use("/api/board", checkAuth, boardRoutes);
 router.use("/api/list", checkAuth, listRoutes);
+router.use("/api/task", checkAuth, taskRoutes);
+
 
 module.exports = router;

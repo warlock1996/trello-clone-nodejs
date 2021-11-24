@@ -1,6 +1,14 @@
 const User = require("../models/User")
 const { Board } = require("../models/Board")
 
+exports.handleGetBoard = async (req, res) => {
+    try {
+        const userBoards = req.user.boards
+        return res.json({ error: false, boards: userBoards })
+    } catch (error) {
+        console.log(error)
+    }
+}
 exports.handleCreateBoard = async (req, res) => {
     try {
         const user = req.user

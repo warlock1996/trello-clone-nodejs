@@ -1,6 +1,7 @@
-const { body, param } = require("express-validator");
+const { body, param, checkSchema } = require("express-validator");
 const { isValidObjectId } = require("mongoose");
-const handleValidationResult = require("./handleValidationResult");
+const User = require("../models/User")
+const { Task } = require("../models/Task")
 
 
 
@@ -10,13 +11,39 @@ exports.validateIndexList = [
         if (boardIndex === -1) return Promise.reject('board does not exist !')
         req.boardIndex = boardIndex
     }),
-    handleValidationResult,
 ];
 
-exports.validateCreateList = [
-    body("name").exists().isString().isLength({ min: "3", max: "20" }),
-    body("boardId").exists().isString().custom(value => isValidObjectId(value)),
-    handleValidationResult,
+exports.validateCreateTask = [
+    body('boardId').exists({ checkNull: true }).notEmpty().custom((value, { req }) => {
+        if (!isValidObjectId(value)) throw new Error('invalid object id')
+        const boardIndex = req.user.boards.findIndex(b => b._id == value)
+        if (boardIndex === -1) throw new Error("board not found !")
+        req.boardIndex = boardIndex
+        return true
+    }),
+    body('listId').exists({ checkNull: true }).notEmpty().custom((value, { req }) => {
+        if (!isValidObjectId(value)) throw new Error('invalid object id')
+        const listIndex = req.user.boards[req.boardIndex]['lists'].findIndex(l => l._id == value)
+        if (listIndex === -1) throw new Error("list not found !")
+        req.listIndex = listIndex
+        return true
+    }),
+    body('task').exists({ checkNull: true }).notEmpty().isLength({ min: 3, max: 20 }),
+    body('assignee').exists({ checkNull: true }).notEmpty().custom(async (value, { req }) => {
+        if (!isValidObjectId(value)) Promise.reject('invalid object id')
+        const assignee = await User.findById(value)
+        if (!assignee) Promise.reject('assignee not found !')
+    }),
+    body('reporter').exists({ checkNull: true }).notEmpty().custom(async (value, { req }) => {
+        if (!isValidObjectId(value)) Promise.reject('invalid object id')
+        const reporter = await User.findById(value)
+        if (!reporter) Promise.reject("reporter not found !")
+    }),
+    body('parentTask').exists({ checkNull: true }).notEmpty().custom(async (value, { req }) => {
+        if (!isValidObjectId(value)) Promise.reject('invalid object id')
+        const parentTask = await Task.findById(value)
+        if (!parentTask) Promise.reject("task not found !")
+    }),
 ];
 
 exports.validateEditList = [
@@ -44,7 +71,6 @@ exports.validateEditList = [
         if (req.user.boards[req.boardIndex]['lists'][req.listIndex]['name'] === value) return false
         return true
     }).withMessage("list name already exists !"),
-    handleValidationResult,
 ];
 
 exports.validateDeleteList = [
@@ -66,5 +92,4 @@ exports.validateDeleteList = [
             req.listIndex = listIndex
             return true
         }),
-    handleValidationResult,
 ]

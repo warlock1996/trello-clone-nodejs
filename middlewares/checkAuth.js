@@ -10,6 +10,8 @@ exports.checkAuth = async (req, res, next) => {
 			if (!user) res.status(401).json({ error: true, message: 'user not found!' })
 
 			req.user = user
+
+			console.log(req.body)
 			return next()
 		}
 

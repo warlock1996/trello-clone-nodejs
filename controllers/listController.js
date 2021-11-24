@@ -1,6 +1,17 @@
 const User = require("../models/User")
 const { List } = require("../models/List")
 
+
+exports.handleGetList = async (req, res) => {
+    try {
+        const user = req.user, boardIndex = req.boardIndex, boardId = req.body.boardId
+        const lists = user.boards[boardIndex]['lists']
+        return res.json({ error: false, lists: lists })
+    } catch (error) {
+        console.error(error)
+    }
+}
+
 exports.handleCreateList = async (req, res) => {
     try {
         const user = req.user

@@ -1,12 +1,18 @@
 const { validationResult } = require("express-validator");
 
-const handleValidationResult = (req, res, next) => {
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		res.json(errors.array());
-	} else {
-        next()
-    }
-};
+const validate = validations => {
+	return (async (req, res, next) => {
+		for (let validation of validations) {
+			const result = await validation.run(req)
+			if (result.errors.length) break;
+		}
 
-module.exports = handleValidationResult;
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) return res.json(errors.array());
+
+		next()
+
+	})
+}
+
+module.exports = validate;

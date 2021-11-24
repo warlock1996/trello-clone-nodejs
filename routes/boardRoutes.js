@@ -8,11 +8,13 @@ const {
 const { checkID } = require("../validators/index");
 
 const {
+	handleGetBoard,
 	handleCreateBoard,
 	handleEditBoard,
 	handleDeleteBoard,
 } = require("../controllers/boardController");
 
+router.get("/index", handleGetBoard);
 router.post("/create", validateCreateBoard, handleCreateBoard);
 router.post("/edit/:id", checkID, validateEditBoard, handleEditBoard);
 router.delete("/delete/:id", validateDeleteBoard, handleDeleteBoard);
