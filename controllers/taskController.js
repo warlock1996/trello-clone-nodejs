@@ -51,14 +51,9 @@ exports.handleDeleteTask = async (req, res) => {
         const user = req.user, boardIndex = req.boardIndex, listIndex = req.listIndex
         const task = await Task.findByIdAndDelete(req.params.id)
         if (!task) return res.json({ error: true, message: 'failed to delete task !' })
-
-        console.log(boardIndex, listIndex, task._id)
-
         user.boards[boardIndex]['lists'][listIndex]['tasks'] = user.boards[boardIndex]['lists'][listIndex]['tasks'].filter(t => t._id != req.params.id)
-        console.log(user.boards[boardIndex]['lists'][listIndex]['tasks'])
         const updatedUser = await user.save()
         if (!updatedUser) return res.json({ error: true, message: 'failed to delete task from user !' })
-
         return res.json({ error: false, data: task })
 
     } catch (error) {
