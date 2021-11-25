@@ -1,6 +1,5 @@
 const { body, param } = require("express-validator");
 const { Board } = require("../models/Board");
-const handleValidationResult = require("./handleValidationResult");
 
 exports.validateCreateBoard = [
 	body("name").exists().isString().isLength({ min: "3", max: "20" }).custom((value, { req }) => {
@@ -8,7 +7,6 @@ exports.validateCreateBoard = [
 
 		return true
 	}),
-	handleValidationResult,
 ];
 
 exports.validateEditBoard = [
@@ -28,7 +26,6 @@ exports.validateEditBoard = [
 		if (req.user.boards[req.boardIndex]['name'] === value) return false
 		else return true
 	}).withMessage("board already exists !"),
-	handleValidationResult,
 ];
 
 exports.validateDeleteBoard = [
@@ -42,5 +39,4 @@ exports.validateDeleteBoard = [
 
 			return true
 		}).withMessage('board not found !'),
-	handleValidationResult,
 ]

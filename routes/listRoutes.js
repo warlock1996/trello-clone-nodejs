@@ -6,6 +6,7 @@ const {
 	validateEditList,
 	validateDeleteList
 } = require("../validators/listValidators");
+const validate = require("../validators/handleValidationResult")
 
 const {
 	handleGetList,
@@ -14,9 +15,9 @@ const {
 	handleDeleteList,
 } = require("../controllers/listController");
 
-router.get("/index/:boardId", validateIndexList, handleGetList);
-router.post("/create", validateCreateList, handleCreateList);
-router.post("/edit/:id", validateEditList, handleEditList);
-router.delete("/delete/:id", validateDeleteList, handleDeleteList);
+router.get("/index/:boardId", validate(validateIndexList), handleGetList);
+router.post("/create", validate(validateCreateList), handleCreateList);
+router.post("/edit/:id", validate(validateEditList), handleEditList);
+router.delete("/delete/:id", validate(validateDeleteList), handleDeleteList);
 
 module.exports = router;

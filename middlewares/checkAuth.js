@@ -11,7 +11,7 @@ exports.checkAuth = async (req, res, next) => {
 
 			req.user = user
 
-			console.log(req.body)
+			// console.log(req.body)
 			return next()
 		}
 
@@ -22,7 +22,9 @@ exports.checkAuth = async (req, res, next) => {
 
             
     } catch (error) {
-		console.log(error)
-		console.log(error.message)
+		res.status(401).json({
+			error: true,
+			message: error.message
+		})
     }
 };

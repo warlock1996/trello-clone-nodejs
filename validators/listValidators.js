@@ -1,6 +1,5 @@
 const { body, param } = require("express-validator");
 const { isValidObjectId } = require("mongoose");
-const handleValidationResult = require("./handleValidationResult");
 
 
 
@@ -10,13 +9,11 @@ exports.validateIndexList = [
         if (boardIndex === -1) return Promise.reject('board does not exist !')
         req.boardIndex = boardIndex
     }),
-    handleValidationResult,
 ];
 
 exports.validateCreateList = [
     body("name").exists().isString().isLength({ min: "3", max: "20" }),
     body("boardId").exists().isString().custom(value => isValidObjectId(value)),
-    handleValidationResult,
 ];
 
 exports.validateEditList = [
@@ -44,7 +41,6 @@ exports.validateEditList = [
         if (req.user.boards[req.boardIndex]['lists'][req.listIndex]['name'] === value) return false
         return true
     }).withMessage("list name already exists !"),
-    handleValidationResult,
 ];
 
 exports.validateDeleteList = [
@@ -66,5 +62,4 @@ exports.validateDeleteList = [
             req.listIndex = listIndex
             return true
         }),
-    handleValidationResult,
 ]

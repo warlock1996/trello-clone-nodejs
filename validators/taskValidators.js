@@ -29,67 +29,70 @@ exports.validateCreateTask = [
         return true
     }),
     body('task').exists({ checkNull: true }).notEmpty().isLength({ min: 3, max: 20 }),
+    body('description').optional().exists({ checkNull: true, checkFalsy: true }).notEmpty().isString().isLength({ min: 10, max: 30 }),
     body('assignee').exists({ checkNull: true }).notEmpty().custom(async (value, { req }) => {
-        if (!isValidObjectId(value)) Promise.reject('invalid object id')
+        if (!isValidObjectId(value)) return Promise.reject('invalid object id')
         const assignee = await User.findById(value)
-        if (!assignee) Promise.reject('assignee not found !')
+        if (!assignee) return Promise.reject('assignee not found !')
     }),
+    body('priority').optional().exists({ checkNull: true, checkFalsy: true }).notEmpty().isString().isLength({ min: 3, max: 20 }),
     body('reporter').exists({ checkNull: true }).notEmpty().custom(async (value, { req }) => {
-        if (!isValidObjectId(value)) Promise.reject('invalid object id')
+        if (!isValidObjectId(value)) return Promise.reject('invalid object id')
         const reporter = await User.findById(value)
-        if (!reporter) Promise.reject("reporter not found !")
+        if (!reporter) return Promise.reject("reporter not found !")
     }),
-    body('parentTask').exists({ checkNull: true }).notEmpty().custom(async (value, { req }) => {
-        if (!isValidObjectId(value)) Promise.reject('invalid object id')
+    body('parentTask').optional().exists({ checkNull: true }).notEmpty().custom(async (value, { req }) => {
+        if (!isValidObjectId(value)) return Promise.reject('invalid object id')
         const parentTask = await Task.findById(value)
-        if (!parentTask) Promise.reject("task not found !")
+        if (!parentTask) return Promise.reject("task not found !")
     }),
 ];
 
-exports.validateEditList = [
-    body("boardId").exists().isString().custom(value => isValidObjectId(value)).custom((value, { req }) => {
-        if (!req.user.boards.find(b => b._id == value)) return false
-        return true
+exports.validateEditTask = [
+    param('id').exists({ checkNull: true, checkFalsy: true }).notEmpty().isString().custom(async (value) => {
+        if (!isValidObjectId(value)) return Promise.reject('invalid object id')
+        const parentTask = await Task.findById(value)
+        if (!parentTask) return Promise.reject("task not found !")
     }),
-    param("id")
-        .exists()
-        .bail()
-        .isString()
-        .custom((value, { req }) => {
-            const boardIndex = req.user.boards.findIndex(b => b._id == req.body.boardId)
-            if (boardIndex >= 0) {
-                const listIndex = req.user.boards[boardIndex]['lists'].findIndex(l => l._id == value)
-                if (listIndex === -1) return false
-                req.boardIndex = boardIndex
-                req.listIndex = listIndex
-            } else {
-                return false
-            }
-            return true
-        }),
-    body("name").exists().isString().isLength({ min: "3", max: "20" }).custom((value, { req }) => {
-        if (req.user.boards[req.boardIndex]['lists'][req.listIndex]['name'] === value) return false
-        return true
-    }).withMessage("list name already exists !"),
+    body('task').optional().exists({ checkNull: true }).notEmpty().isLength({ min: 3, max: 20 }),
+    body('description').optional().exists({ checkNull: true, checkFalsy: true }).notEmpty().isString().isLength({ min: 10, max: 30 }),
+    body('assignee').optional().exists({ checkNull: true }).notEmpty().custom(async (value, { req }) => {
+        if (!isValidObjectId(value)) return Promise.reject('invalid object id')
+        const assignee = await User.findById(value)
+        if (!assignee) return Promise.reject('assignee not found !')
+    }),
+    body('priority').optional().exists({ checkNull: true, checkFalsy: true }).notEmpty().isString().isLength({ min: 3, max: 20 }),
+    body('reporter').optional().exists({ checkNull: true }).notEmpty().custom(async (value, { req }) => {
+        if (!isValidObjectId(value)) return Promise.reject('invalid object id')
+        const reporter = await User.findById(value)
+        if (!reporter) return Promise.reject("reporter not found !")
+    }),
+    body('parentTask').optional().exists({ checkNull: true }).notEmpty().custom(async (value, { req }) => {
+        if (!isValidObjectId(value)) return Promise.reject('invalid object id')
+        const parentTask = await Task.findById(value)
+        if (!parentTask) return Promise.reject("task not found !")
+    }),
 ];
 
-exports.validateDeleteList = [
+exports.validateDeleteTask = [
+    param('id').exists({ checkNull: true, checkFalsy: true }).notEmpty().isString().custom(async (value) => {
+        if (!isValidObjectId(value)) return Promise.reject('invalid object id')
+        const task = await Task.findById(value)
+        if (!task) return Promise.reject("task not found !")
+    }),
     body("boardId").exists().bail().isString().custom(value => isValidObjectId(value)).custom((value, { req }) => {
         const boardIndex = req.user.boards.findIndex(b => b._id == value)
-        if (boardIndex === -1) return false
-
+        if (boardIndex === -1) throw new Error("board not found !")
         req.boardIndex = boardIndex
         return true
     }),
-    param("id")
-        .exists()
-        .bail()
-        .isString()
-        .custom(value => isValidObjectId(value)).custom((value, { req }) => {
-            const listIndex = req.user.boards[req.boardIndex]['lists'].findIndex(l => l._id == value)
-            if (listIndex === -1) return false
+    body('listId').exists({ checkNull: true }).notEmpty().custom((value, { req }) => {
+        if (!isValidObjectId(value)) throw new Error('invalid object id')
+        const listIndex = req.user.boards[req.boardIndex]['lists'].findIndex(l => l._id == value)
+        if (listIndex === -1) throw new Error("list not found !")
+        req.listIndex = listIndex
+        return true
+    }),
 
-            req.listIndex = listIndex
-            return true
-        }),
 ]
+

@@ -5,8 +5,8 @@ const {
 	validateEditBoard,
 	validateDeleteBoard
 } = require("../validators/boardValidators");
-const { checkID } = require("../validators/index");
 
+const validate = require("../validators/handleValidationResult")
 const {
 	handleGetBoard,
 	handleCreateBoard,
@@ -15,8 +15,8 @@ const {
 } = require("../controllers/boardController");
 
 router.get("/index", handleGetBoard);
-router.post("/create", validateCreateBoard, handleCreateBoard);
-router.post("/edit/:id", checkID, validateEditBoard, handleEditBoard);
-router.delete("/delete/:id", validateDeleteBoard, handleDeleteBoard);
+router.post("/create", validate(validateCreateBoard), handleCreateBoard);
+router.post("/edit/:id", validate(validateEditBoard), handleEditBoard);
+router.delete("/delete/:id", validate(validateDeleteBoard), handleDeleteBoard);
 
 module.exports = router;
