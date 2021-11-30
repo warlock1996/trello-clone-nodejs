@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
 	validateIndexList,
+	validateGetTasksByList,
 	validateCreateList,
 	validateEditList,
 	validateDeleteList
@@ -13,11 +14,13 @@ const {
 	handleCreateList,
 	handleEditList,
 	handleDeleteList,
+	handleGetTasksByList,
 } = require("../controllers/listController");
 
 router.get("/index/:boardId", validate(validateIndexList), handleGetList);
+router.get("/indexTasksByList/:boardId/:listId", validate(validateGetTasksByList), handleGetTasksByList);
 router.post("/create", validate(validateCreateList), handleCreateList);
-router.post("/edit/:id", validate(validateEditList), handleEditList);
-router.delete("/delete/:id", validate(validateDeleteList), handleDeleteList);
+router.post("/edit/:boardId/:listId", validate(validateEditList), handleEditList);
+router.delete("/delete/:boardId/:listId", validate(validateDeleteList), handleDeleteList);
 
 module.exports = router;

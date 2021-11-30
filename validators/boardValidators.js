@@ -2,16 +2,18 @@ const { body, param } = require("express-validator");
 const { Board } = require("../models/Board");
 
 exports.validateCreateBoard = [
-	body("name").exists().isString().isLength({ min: "3", max: "20" }).custom((value, { req }) => {
-		if (req.user.boards.find(b => b.name == value)) return false
-
-		return true
+	body("name").exists().isString().isLength({ min: "3", max: "20" }).custom(async (value, { req }) => {
+		const userBoardIds = req.user.boards
+		const boards = await Board.find({ _id: userBoardIds, name: value }).exec()
+		if (boards.length) return Promise.reject('board with this name already exists !')
 	}),
 ];
 
 exports.validateEditBoard = [
 	param("id")
-		.exists()
+		.exists({ checkNull: true, checkFalsy: true })
+		.bail()
+		.notEmpty()
 		.bail()
 		.isString()
 		.custom((value, { req }) => {
@@ -22,10 +24,11 @@ exports.validateEditBoard = [
 			return true
 
 		}).withMessage("board not found !"),
-	body("name").exists().isString().isLength({ min: "3", max: "20" }).custom((value, { req }) => {
-		if (req.user.boards[req.boardIndex]['name'] === value) return false
-		else return true
-	}).withMessage("board already exists !"),
+	body("name").exists({ checkNull: true, checkFalsy: true })
+		.notEmpty().bail().isString().isLength({ min: "3", max: "20" }).custom((value, { req }) => {
+			if (req.user.boards[req.boardIndex]['name'] === value) return false
+			else return true
+		}).withMessage("board already exists !"),
 ];
 
 exports.validateDeleteBoard = [

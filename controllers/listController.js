@@ -1,12 +1,26 @@
 const User = require("../models/User")
 const { List } = require("../models/List")
+const { Board } = require("../models/Board")
+const { Task } = require("../models/Task")
 
 
 exports.handleGetList = async (req, res) => {
     try {
-        const user = req.user, boardIndex = req.boardIndex, boardId = req.body.boardId
-        const lists = user.boards[boardIndex]['lists']
-        return res.json({ error: false, lists: lists })
+        const board = req.board
+        const lists = board.lists
+        return res.json({ error: false, data: lists })
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+exports.handleGetTasksByList = async (req, res) => {
+    try {
+        const list = req.list
+        const taskIds = list.tasks
+        if (taskIds.length === 0) return res.json({ error: false, data: [], message: 'list is empty' })
+        const tasks = await Task.find({ _id: { $in: taskIds } })
+        return res.json({ error: false, data: tasks })
     } catch (error) {
         console.error(error)
     }
@@ -14,25 +28,15 @@ exports.handleGetList = async (req, res) => {
 
 exports.handleCreateList = async (req, res) => {
     try {
-        const user = req.user
-        const boardId = req.body.boardId
+        const board = req.board, name = req.body.name
         const list = new List({
-            name: req.body.name
+            name: name
         })
-
-        const boardIndex = user.boards.findIndex(b => b._id == boardId)
-        if (boardIndex === -1) return res.json({ error: true, message: 'board not found' })
-
-        const boardLists = user.boards[boardIndex]['lists']
-        if (boardLists.find(l => l.name === req.body.name)) {
-            return res.json({ error: true, message: 'list name already exists' })
-        }
-        user.boards[boardIndex]['lists'].push(list)
-        await user.save()
-
+        board.lists.push(list)
+        await board.save();
         return res.json({
             error: false,
-            message: 'success'
+            data: list
         })
     } catch (error) {
         console.error(error)
@@ -41,12 +45,12 @@ exports.handleCreateList = async (req, res) => {
 
 exports.handleEditList = async (req, res) => {
     try {
-        const user = req.user, boardIndex = req.boardIndex, listIndex = req.listIndex
-        user.boards[boardIndex]['lists'][listIndex]['name'] = req.body.name
-        await user.save()
+        const board = req.board, listIndex = req.listIndex, name = req.body.name
+        board.lists[listIndex]['name'] = name
+        await board.save()
         return res.json({
             error: false,
-            message: 'list updated successfully !'
+            data: board.lists[listIndex]
         })
     } catch (error) {
         console.error(error)
@@ -54,13 +58,17 @@ exports.handleEditList = async (req, res) => {
 };
 exports.handleDeleteList = async (req, res) => {
     try {
-        const user = req.user, boardIndex = req.boardIndex, listIndex = req.listIndex
-        const id = user.boards[boardIndex]['lists'][listIndex]['_id']
-        user.boards[boardIndex]['lists'] = user.boards[boardIndex]['lists'].filter(l => l._id != id)
-        await user.save()
+        const board = req.board, listIndex = req.listIndex
+        const list = board.lists[listIndex]
+        board.lists = board.lists.filter(l => l._id != list._id)
+        await board.save();
+
+        const results = await Task.deleteMany({ _id: { $in: list.tasks } })
+
         return res.json({
             error: false,
-            message: "list deleted successfully !"
+            data: list,
+            listTasksDetails: results
         })
 
     } catch (error) {

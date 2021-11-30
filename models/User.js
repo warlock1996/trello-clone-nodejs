@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { BoardsSchema } = require("./Board")
 
 const UserSchema = new mongoose.Schema({
 	name: String,
@@ -8,7 +7,7 @@ const UserSchema = new mongoose.Schema({
 	email_verified_at: { type: Date, default: null },
 	token: { type: String, default: null },
 	address: String,
-	boards: [BoardsSchema]
+	boards: [mongoose.Types.ObjectId]
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", UserSchema);

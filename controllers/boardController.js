@@ -1,10 +1,12 @@
-const User = require("../models/User")
 const { Board } = require("../models/Board")
+const { Task } = require("../models/Task")
+const { OWNER_PERMISSIONS, MEMBER_PERMISSIONS } = require("../utils/samplepermissions")
 
 exports.handleGetBoard = async (req, res) => {
     try {
-        const userBoards = req.user.boards
-        return res.json({ error: false, boards: userBoards })
+        const boardIds = req.user.boards
+        const userBoards = await Board.find({ _id: { $in: boardIds } }).exec()
+        return res.json({ error: false, data: userBoards })
     } catch (error) {
         console.log(error)
     }
@@ -12,14 +14,19 @@ exports.handleGetBoard = async (req, res) => {
 exports.handleCreateBoard = async (req, res) => {
     try {
         const user = req.user
+        const defaultMember = { _id: user._id, name: user.name, permissions: OWNER_PERMISSIONS }
         const board = new Board({
-            name: req.body.name
+            name: req.body.name,
+            lists: [],
+            members: [defaultMember]
         })
-        user.boards.push(board)
+        await board.save()
+        user.boards.push(board._id)
         await user.save()
-        res.json({
+
+        return res.json({
             error: false,
-            message: 'success'
+            data: board
         })
     } catch (error) {
         console.error(error)
@@ -29,12 +36,15 @@ exports.handleCreateBoard = async (req, res) => {
 exports.handleEditBoard = async (req, res) => {
     try {
 
-        const user = req.user
-        user.boards[req.boardIndex]['name'] = req.body.name
-        await user.save()
-        res.json({
+        const boardId = req.params.id, boardName = req.body.name
+        const board = await Board.findByIdAndUpdate(boardId, { name: boardName }, {
+            returnDocument: 'after'
+        })
+        if (!board) return res.json({ error: true, message: 'failed to edit board !' })
+
+        return res.json({
             error: false,
-            message: 'success'
+            data: board
         })
     } catch (error) {
         console.error(error)
@@ -42,12 +52,20 @@ exports.handleEditBoard = async (req, res) => {
 };
 exports.handleDeleteBoard = async (req, res) => {
     try {
-        const user = req.user
-        user.boards = user.boards.filter((b) => b._id != req.params.id)
+        const user = req.user, boardId = req.params.id
+        const board = await Board.findByIdAndDelete(boardId)
+        if (!board) return res.json({ error: true, message: 'failed to delete board !' })
+        user.boards = user.boards.filter((b) => b._id != boardId)
         await user.save()
-        res.json({
+
+        const tasksToBeDeleted = board.lists.flatMap(list => list.tasks)
+
+        const results = await Task.deleteMany({ _id: { $in: tasksToBeDeleted } })
+
+        return res.json({
             error: false,
-            message: "board deleted !"
+            data: board,
+            boardListTaskDetails: results
         })
 
     } catch (error) {
