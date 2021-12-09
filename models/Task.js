@@ -6,7 +6,7 @@ const TaskSchema = new mongoose.Schema({
     assignee: mongoose.Types.ObjectId,
     priority: String,
     reporter: mongoose.Types.ObjectId,
-    parentTask: mongoose.Types.ObjectId
+    subtasks: Array
 }, {
     timestamps: true
 });
@@ -14,3 +14,5 @@ const TaskSchema = new mongoose.Schema({
 
 exports.TaskSchema = TaskSchema
 exports.Task = mongoose.model("Tasks", TaskSchema);
+
+

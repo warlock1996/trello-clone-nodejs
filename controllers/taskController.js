@@ -13,20 +13,25 @@ exports.handleGetTask = async (req, res) => {
 
 exports.handleCreateTask = async (req, res) => {
     try {
-        const user = req.user, boardIndex = req.boardIndex, listIndex = req.listIndex
+        const board = req.board, listIndex = req.listIndex, parentTask = req.task || null
+
         const task = new Task({
             task: req.body.task,
             description: req.body.description || '',
             assignee: req.body.assignee,
             priority: req.body.priority || '',
-            reporter: req.body.reporter,
-            parentTask: req.body.parentTask || null
+            reporter: req.body.reporter
         })
-        await task.save()
-        user.boards[boardIndex]['lists'][listIndex]['tasks'].push(task._id)
-        await user.save()
+        if (parentTask) {
+            parentTask.subtasks.push(task)
+            await parentTask.save()
+            return res.json({ error: false, data: parentTask })
+        }
 
-        return res.json({ error: true, message: "task created !" })
+        await task.save()
+        board.lists[listIndex]['tasks'].push(task._id)
+        await board.save()
+        return res.json({ error: false, data: task })
 
     } catch (error) {
         console.error(error)
@@ -36,11 +41,16 @@ exports.handleCreateTask = async (req, res) => {
 exports.handleEditTask = async (req, res) => {
     try {
         const validatedData = matchedData(req, { locations: ['body'] })
-        const task = await Task.findByIdAndUpdate(req.params.id, validatedData, {
-            new: true,
+        if (req.subtaskIndex >= 0) {
+            req.task.subtasks[req.subtaskIndex] = { ...req.task.subtasks[req.subtaskIndex], ...validatedData }
+            const task = await req.task.save()
+            if (!task) return res.json({ error: true, message: 'failed to update subtask !' })
+            return res.json({ error: false, data: task })
+        }
+        const task = await Task.findByIdAndUpdate(req.params.taskId, validatedData, {
+            returnDocument: 'after'
         })
-        if (!task) return res.json({ error: true, message: "failed to update !" })
-
+        if (!task) return res.json({ error: true, message: "failed to save" })
         return res.json({ error: false, data: task })
     } catch (error) {
         console.error(error)
@@ -48,12 +58,20 @@ exports.handleEditTask = async (req, res) => {
 };
 exports.handleDeleteTask = async (req, res) => {
     try {
-        const user = req.user, boardIndex = req.boardIndex, listIndex = req.listIndex
-        const task = await Task.findByIdAndDelete(req.params.id)
+        if (req.subtaskIndex >= 0) {
+            req.task.subtasks = req.task.subtasks.filter(st => st._id != req.params.subtaskId)
+            const task = await req.task.save()
+            if (!task) return res.json({ error: true, message: 'failed to delete subtask !' })
+            return res.json({ error: false, data: task })
+        }
+
+        const task = await Task.findByIdAndDelete(req.params.taskId)
         if (!task) return res.json({ error: true, message: 'failed to delete task !' })
-        user.boards[boardIndex]['lists'][listIndex]['tasks'] = user.boards[boardIndex]['lists'][listIndex]['tasks'].filter(t => t._id != req.params.id)
-        const updatedUser = await user.save()
-        if (!updatedUser) return res.json({ error: true, message: 'failed to delete task from user !' })
+
+        req.board.lists[req.listIndex]['tasks'] = req.board.lists[req.listIndex]['tasks'].filter(listTaskId => listTaskId != req.params.taskId)
+        const board = await req.board.save()
+        if (!board) return res.json({ error: true, message: 'failed to save board !' })
+
         return res.json({ error: false, data: task })
 
     } catch (error) {
