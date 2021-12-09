@@ -6,11 +6,24 @@ const { Board } = require("../models/Board")
 
 
 
-exports.validateIndexList = [
-    param("boardId").exists().isString().custom(value => isValidObjectId(value)).custom(async (value, { req }) => {
-        const boardIndex = req.user.boards.findIndex(b => b._id == value)
-        if (boardIndex === -1) return Promise.reject('board does not exist !')
-        req.boardIndex = boardIndex
+exports.validateIndexTask = [
+    param("boardId").exists({ checkNull: true, checkFalsy: true }).notEmpty().custom(async (value, { req }) => {
+        if (!isValidObjectId(value)) return Promise.reject('invalid object id')
+        const board = await Board.findById(value)
+        if (!board) return Promise.reject("board does not exist !")
+        req.board = board
+    }),
+    param('listId').exists({ checkNull: true, checkFalsy: true }).notEmpty().custom(async (value, { req }) => {
+        if (!isValidObjectId(value)) return Promise.reject('invalid object id')
+        const listIndex = req.board.lists.findIndex(l => l._id == value)
+        if (listIndex === -1) return Promise.reject("list does not exist for this board !")
+        req.listIndex = listIndex
+    }),
+    param('taskId').optional().exists({ checkNull: true, checkFalsy: true }).notEmpty().custom(async (value, { req }) => {
+        if (!isValidObjectId(value)) return Promise.reject('invalid object id')
+        const task = await Task.findById(value)
+        if (!task) return Promise.reject("task does not exist !")
+        req.task = task
     }),
 ];
 

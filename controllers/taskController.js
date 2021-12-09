@@ -3,9 +3,12 @@ const { Task } = require("../models/Task")
 const { matchedData } = require("express-validator")
 
 
-exports.handleGetTask = async (req, res) => {
+exports.handleIndexTask = async (req, res) => {
     try {
-
+        return res.json({
+            error: false,
+            data: req.task
+        })
     } catch (error) {
         console.error(error)
     }
