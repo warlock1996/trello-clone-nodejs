@@ -31,7 +31,7 @@ exports.validateGetTasksByList = [
         .custom(value => isValidObjectId(value)).custom((value, { req }) => {
             const listIndex = req.board.lists.findIndex(l => l._id == value)
             if (listIndex === -1) throw new Error("list does not exist for this board !")
-            req.list = req.board[listIndex]
+            req.list = req.board.lists[listIndex]
             return true
         }),
 ];
