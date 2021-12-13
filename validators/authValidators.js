@@ -11,8 +11,6 @@ exports.validateSignUp = [
 		.bail()
 		.isEmail()
 		.bail()
-		.normalizeEmail()
-		.bail()
 		.custom(async (value) => {
 			const user = await User.findOne({ email: value });
 			if (user) return Promise.reject("E-mail already in use !");
@@ -27,7 +25,6 @@ exports.validateLogin = [
 		.exists()
 		.isEmail()
 		.bail()
-		.normalizeEmail()
 		.custom(async (value, { req }) => {
 			const hashedPassword = getHash(req.body.password);
 			const user = await User.findOne({ email: value });

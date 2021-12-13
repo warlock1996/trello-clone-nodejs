@@ -11,7 +11,7 @@ exports.checkAuth = async (req, res, next) => {
 
 			req.user = user
 
-			console.log(req.body, req.params)
+			console.log(req.user)
 			return next()
 		}
 

@@ -15,8 +15,8 @@ exports.handleSignUp = async (req, res) => {
 			email,
 			"successfull signup",
 			"successfully signed up, please visit link to activate account",
-			`<a href=${req.protocol}://${req.hostname}:5000/account/activate/${encodedEmail}>
-				Click to activate ${req.protocol}://${req.hostname}:5000/account/activate/${encodedEmail}
+			`<a href=${req.protocol}://${req.hostname}:5000/api/account/activate/${encodedEmail}>
+				Click to activate ${req.protocol}://${req.hostname}:5000/api/account/activate/${encodedEmail}
 			</a>`
 		);
 		res.json({

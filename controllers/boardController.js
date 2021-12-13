@@ -1,5 +1,9 @@
 const { Board } = require("../models/Board")
 const { Task } = require("../models/Task")
+const { mail } = require("../utils/mailer");
+const { sign } = require("../utils/jwt");
+
+
 const { OWNER_PERMISSIONS, MEMBER_PERMISSIONS } = require("../utils/samplepermissions")
 
 exports.handleGetBoard = async (req, res) => {
@@ -8,7 +12,7 @@ exports.handleGetBoard = async (req, res) => {
         const userBoards = await Board.find({ _id: { $in: boardIds } }).exec()
         return res.json({ error: false, data: userBoards })
     } catch (error) {
-        console.log(error)
+        console.error(error)
     }
 }
 exports.handleCreateBoard = async (req, res) => {
@@ -32,7 +36,6 @@ exports.handleCreateBoard = async (req, res) => {
         console.error(error)
     }
 };
-
 exports.handleEditBoard = async (req, res) => {
     try {
 
@@ -72,3 +75,34 @@ exports.handleDeleteBoard = async (req, res) => {
         console.error(error)
     }
 };
+
+exports.handleInviteUser = async (req, res) => {
+    const boardId = req.params.boardId, emails = req.body.emails
+    emails.forEach(async (email) => {
+        const inviteToken = await sign({ email, boardId })
+        await mail(email, 'Board Invite', 'you are invited to the trello board !',
+            `<a href=${req.protocol}://${req.hostname}:5000/api/board/accept-invitation/${inviteToken}>
+				Accept Invitation
+			</a>`
+        )
+    })
+    return res.json({ error: false, message: 'invites sent !' })
+}
+
+exports.handleAcceptInvitation = async (req, res) => {
+    const { boardId } = req.decodedInviteToken
+    const member = { _id: req.user._id, name: req.user.name, permissions: MEMBER_PERMISSIONS }
+
+    const isUserMember = req.board.members.findIndex(mem => mem._id == req.user._id)
+    const boardIndex = req.user.boards.findIndex(bid => bid == boardId)
+
+    if (isUserMember >= 0 || boardIndex >= 0)
+        return res.json({ error: true, message: 'user is already a member !' })
+
+    req.board.members.push(member)
+    req.user.boards.push(boardId)
+    await req.board.save()
+    await req.user.save()
+
+    return res.json({ error: false, message: 'invitation accepted !' })
+}
