@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { checkPerms } = require("../middlewares/checkPerms")
 const {
 	validateIndexList,
 	validateGetTasksByList,
@@ -17,10 +18,10 @@ const {
 	handleGetTasksByList,
 } = require("../controllers/listController");
 
-router.get("/index/:boardId", validate(validateIndexList), handleGetList);
-router.get("/indexTasksByList/:boardId/:listId", validate(validateGetTasksByList), handleGetTasksByList);
-router.post("/create", validate(validateCreateList), handleCreateList);
-router.post("/edit/:boardId/:listId", validate(validateEditList), handleEditList);
-router.delete("/delete/:boardId/:listId", validate(validateDeleteList), handleDeleteList);
+router.get("/index/:boardId", checkPerms('list', 'read'), validate(validateIndexList), handleGetList);
+router.get("/indexTasksByList/:boardId/:listId", checkPerms('list', 'read'), validate(validateGetTasksByList), handleGetTasksByList);
+router.post("/create/:boardId", checkPerms('list', 'create'), validate(validateCreateList), handleCreateList);
+router.post("/edit/:boardId/:listId", checkPerms('list', 'update'), validate(validateEditList), handleEditList);
+router.delete("/delete/:boardId/:listId", checkPerms('list', 'delete'), validate(validateDeleteList), handleDeleteList);
 
 module.exports = router;

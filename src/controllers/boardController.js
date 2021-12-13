@@ -39,7 +39,7 @@ exports.handleCreateBoard = async (req, res) => {
 exports.handleEditBoard = async (req, res) => {
     try {
 
-        const boardId = req.params.id, boardName = req.body.name
+        const boardId = req.params.boardId, boardName = req.body.name
         const board = await Board.findByIdAndUpdate(boardId, { name: boardName }, {
             returnDocument: 'after'
         })
@@ -55,7 +55,7 @@ exports.handleEditBoard = async (req, res) => {
 };
 exports.handleDeleteBoard = async (req, res) => {
     try {
-        const user = req.user, boardId = req.params.id
+        const user = req.user, boardId = req.params.boardId
         const board = await Board.findByIdAndDelete(boardId)
         if (!board) return res.json({ error: true, message: 'failed to delete board !' })
         user.boards = user.boards.filter((b) => b._id != boardId)

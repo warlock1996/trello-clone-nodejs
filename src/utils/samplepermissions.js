@@ -1,18 +1,18 @@
 
 exports.OWNER_PERMISSIONS = {
-    boardPermissions: {
+    board: {
         create: true,
         read: true,
         update: true,
         delete: true
     },
-    listPermissions: {
+    list: {
         create: true,
         read: true,
         update: true,
         delete: true
     },
-    taskPermissions: {
+    task: {
         create: true,
         read: true,
         update: true,
@@ -22,19 +22,19 @@ exports.OWNER_PERMISSIONS = {
 
 
 exports.MEMBER_PERMISSIONS = {
-    boardPermissions: {
+    board: {
         create: false,
         read: true,
         update: true,
         delete: false
     },
-    listPermissions: {
+    list: {
         create: true,
         read: true,
         update: true,
         delete: false
     },
-    taskPermissions: {
+    task: {
         create: true,
         read: true,
         update: true,

@@ -13,45 +13,41 @@ exports.validateCreateBoard = [
 ];
 
 exports.validateEditBoard = [
-	param("id")
+	param("boardId")
 		.exists({ checkNull: true, checkFalsy: true })
 		.bail()
 		.notEmpty()
 		.bail()
 		.isString()
-		.custom((value, { req }) => {
+		.custom(async (value, { req }) => {
 			const boardIndex = req.user.boards.findIndex(b => b._id == value)
-			if (boardIndex === -1) return false
-
+			if (boardIndex === -1) return Promise.reject('board not found !')
 			req.boardIndex = boardIndex
-			return true
-
-		}).withMessage("board not found !"),
-	body("name").exists({ checkNull: true, checkFalsy: true })
-		.notEmpty().bail().isString().isLength({ min: "3", max: "20" }).custom((value, { req }) => {
-			if (req.user.boards[req.boardIndex]['name'] === value) return false
-			else return true
-		}).withMessage("board already exists !"),
+		}),
+	body("name")
+		.exists({ checkNull: true, checkFalsy: true })
+		.notEmpty().bail()
+		.isString().bail()
+		.isLength({ min: "3", max: "20" }).bail()
+		.custom(async (value, { req }) => {
+			if (req.user.boards[req.boardIndex]['name'] === value) return Promise.reject('board already exists !')
+		})
 ];
 
 exports.validateDeleteBoard = [
-	param("id")
-		.exists()
-		.bail()
-		.isString()
+	param("boardId")
+		.exists().bail()
+		.isString().bail()
 		.custom((value, { req }) => {
 			const boardIndex = req.user.boards.findIndex(b => b._id == value)
-			if (boardIndex === -1) return false
-
-			return true
-		}).withMessage('board not found !'),
+			if (boardIndex === -1) return Promise.reject('board not found !')
+		}),
 ]
 
 exports.validateInviteUser = [
 	param("boardId")
-		.exists()
-		.bail()
-		.isString()
+		.exists().bail()
+		.isString().bail()
 		.custom(value => isValidObjectId(value)).bail()
 		.custom(async (value, { req }) => {
 			const boardIndex = req.user.boards.findIndex(b => b._id == value)

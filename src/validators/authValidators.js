@@ -7,10 +7,8 @@ const { verify } = require("../utils/jwt");
 exports.validateSignUp = [
 	body("name").exists().isString().isLength({ min: "3", max: "20" }),
 	body("email")
-		.exists()
-		.bail()
-		.isEmail()
-		.bail()
+		.exists().bail()
+		.isEmail().bail()
 		.custom(async (value) => {
 			const user = await User.findOne({ email: value });
 			if (user) return Promise.reject("E-mail already in use !");

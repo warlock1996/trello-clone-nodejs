@@ -37,7 +37,7 @@ exports.validateGetTasksByList = [
 ];
 
 exports.validateCreateList = [
-    body("boardId").exists().bail().isString().custom(value => isValidObjectId(value)).custom(async (value, { req }) => {
+    param("boardId").exists().bail().isString().custom(value => isValidObjectId(value)).custom(async (value, { req }) => {
         const board = await Board.findById(value)
         if (!board) return Promise.reject("board does not exist !")
         req.board = board

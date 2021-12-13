@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 
 const PermissionSchema = new mongoose.Schema({
-    boardPermissions: { type: Object },
-    listPermissions: { type: Object },
-    taskPermissions: { type: Object },
+    board: { type: Object },
+    list: { type: Object },
+    task: { type: Object },
 })
 
 // const RoleSchema = new mongoose.Schema({
