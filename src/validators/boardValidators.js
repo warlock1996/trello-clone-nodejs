@@ -57,9 +57,12 @@ exports.validateInviteUser = [
 			const boardIndex = req.user.boards.findIndex(b => b._id == value)
 			if (boardIndex === -1) return Promise.reject("board not found for this user !")
 		}),
-	body("emails").exists({ checkNull: true, checkFalsy: true }).withMessage("expected emails property on body").bail()
-		.isArray({ min: 1, max: 5 }).withMessage('emails should be an array with atleast one element !')
-		.bail()
+	body("emails")
+		.exists({ checkNull: true, checkFalsy: true }).withMessage("expected emails property on body").bail()
+		.isArray({ min: 1, max: 5 }).withMessage('emails should be an array with atleast one element !').bail()
+		.customSanitizer((value, { req }) => {
+			return value.filter(email => email !== req.user.email)
+		})
 ]
 
 exports.validateAcceptInvite = [
@@ -79,5 +82,4 @@ exports.validateAcceptInvite = [
 			if (!board) return Promise.reject('board not found !')
 			req.board = board
 		})
-
 ]

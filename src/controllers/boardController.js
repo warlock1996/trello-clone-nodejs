@@ -96,8 +96,12 @@ exports.handleAcceptInvitation = async (req, res) => {
     const isUserMember = req.board.members.findIndex(mem => mem._id == req.user._id)
     const boardIndex = req.user.boards.findIndex(bid => bid == boardId)
 
-    if (isUserMember >= 0 || boardIndex >= 0)
+    if (isUserMember >= 0)
         return res.json({ error: true, message: 'user is already a member !' })
+
+    if (boardIndex >= 0)
+        return res.json({ error: true, message: 'board already exists in user list !' })
+
 
     req.board.members.push(member)
     req.user.boards.push(boardId)
