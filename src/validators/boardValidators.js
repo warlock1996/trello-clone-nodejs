@@ -38,7 +38,8 @@ exports.validateDeleteBoard = [
 	param("boardId")
 		.exists().bail()
 		.isString().bail()
-		.custom((value, { req }) => {
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
 			const boardIndex = req.user.boards.findIndex(b => b._id == value)
 			if (boardIndex === -1) return Promise.reject('board not found !')
 		}),
