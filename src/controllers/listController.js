@@ -1,8 +1,6 @@
-const User = require("../models/User")
 const { List } = require("../models/List")
-const { Board } = require("../models/Board")
 const { Task } = require("../models/Task")
-
+const { handleError } = require("../utils/error")
 
 exports.handleGetList = async (req, res) => {
     try {
@@ -10,7 +8,20 @@ exports.handleGetList = async (req, res) => {
         const lists = board.lists
         return res.json({ error: false, data: lists })
     } catch (error) {
-        console.error(error)
+        handleError(error, res)
+    }
+}
+
+exports.handleMoveTask = async (req, res) => {
+    try {
+        req.board.lists[req.fromListIndex]['tasks'] = req.board.lists[req.fromListIndex]['tasks'].filter(t => t._id.toString() != req.params.taskId.toString())
+        req.board.lists[req.toListIndex]['tasks'].push(req.params.taskId)
+        const board = await req.board.save()
+        if (!board) return res.json({ error: true, message: 'failed to move task !' })
+
+        return res.json({ error: false, message: `Task: ${req.params.taskId} moved to List: ${req.params.toListId}` })
+    } catch (error) {
+        handleError(error, res)
     }
 }
 
@@ -22,7 +33,7 @@ exports.handleGetTasksByList = async (req, res) => {
         const tasks = await Task.find({ _id: { $in: taskIds } })
         return res.json({ error: false, data: tasks })
     } catch (error) {
-        console.error(error)
+        handleError(error, res)
     }
 }
 
@@ -39,7 +50,7 @@ exports.handleCreateList = async (req, res) => {
             data: list
         })
     } catch (error) {
-        console.error(error)
+        handleError(error, res)
     }
 };
 
@@ -53,7 +64,7 @@ exports.handleEditList = async (req, res) => {
             data: board.lists[listIndex]
         })
     } catch (error) {
-        console.error(error)
+        handleError(error, res)
     }
 };
 exports.handleDeleteList = async (req, res) => {
@@ -72,6 +83,6 @@ exports.handleDeleteList = async (req, res) => {
         })
 
     } catch (error) {
-        console.error(error)
+        handleError(error, res)
     }
 };

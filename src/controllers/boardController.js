@@ -1,8 +1,10 @@
+const mongoose = require("mongoose")
 const { Board } = require("../models/Board")
 const { Task } = require("../models/Task")
 const { mail } = require("../utils/mailer");
 const { sign } = require("../utils/jwt");
-const mongoose = require("mongoose")
+const { handleError } = require("../utils/error")
+
 
 const { OWNER_PERMISSIONS, MEMBER_PERMISSIONS } = require("../utils/samplepermissions")
 
@@ -12,7 +14,7 @@ exports.handleGetBoard = async (req, res) => {
         const userBoards = await Board.find({ _id: { $in: boardIds } }).exec()
         return res.json({ error: false, data: userBoards })
     } catch (error) {
-        console.error(error)
+        handleError(error, res)
     }
 }
 exports.handleCreateBoard = async (req, res) => {
@@ -37,8 +39,7 @@ exports.handleCreateBoard = async (req, res) => {
             data: board
         })
     } catch (error) {
-        console.error(error)
-        return res.status(500).send()
+        handleError(error, res)
     } finally {
         await session.endSession()
     }
@@ -57,7 +58,7 @@ exports.handleEditBoard = async (req, res) => {
             data: board
         })
     } catch (error) {
-        console.error(error)
+        handleError(error, res)
     }
 };
 exports.handleDeleteBoard = async (req, res) => {
@@ -79,7 +80,7 @@ exports.handleDeleteBoard = async (req, res) => {
         })
 
     } catch (error) {
-        console.error(error)
+        handleError(error, res)
     }
 };
 

@@ -1,7 +1,7 @@
 const { body, param } = require("express-validator");
 const { isValidObjectId } = require("mongoose");
 const { Board } = require("../models/Board")
-
+const { Task } = require("../models/Task")
 
 
 exports.validateIndexList = [
@@ -14,6 +14,33 @@ exports.validateIndexList = [
         req.board = board
     }),
 ];
+
+exports.validateMoveTask = [
+    param("boardId").exists().isString().custom(value => isValidObjectId(value)).custom(async (value, { req }) => {
+        const boardIndex = req.user.boards.findIndex(b => b._id == value)
+        if (boardIndex === -1) return Promise.reject('board does not exist for this user !')
+        const board = await Board.findById(value)
+        if (!board) return Promise.reject("board does not exist !")
+        req.board = board
+    }),
+    param("fromListId").exists().isString().custom(value => isValidObjectId(value)).custom(async (value, { req }) => {
+        const fromListIndex = req.board.lists.findIndex(l => l._id == value)
+        if (fromListIndex === -1) return Promise.reject("list does not exist for this board !")
+        req.fromListIndex = fromListIndex
+    }),
+    param("toListId").exists().isString().custom(value => isValidObjectId(value)).custom(async (value, { req }) => {
+        const toListIndex = req.board.lists.findIndex(l => l._id == value)
+        if (toListIndex === -1) return Promise.reject("list does not exist for this board !")
+        req.toListIndex = toListIndex
+    }),
+    param("taskId").exists().isString().custom(value => isValidObjectId(value)).custom(async (value, { req }) => {
+        const taskIndex = req.board.lists[req.fromListIndex]['tasks'].findIndex(t => t._id.toString() == value)
+        if (taskIndex === -1) return Promise.reject("task does not belong to source list !")
+        const task = await Task.findById(value)
+        if (!task) return Promise.reject("task does not exist !")
+        req.task = task
+    })
+]
 
 exports.validateGetTasksByList = [
     param("boardId").exists().isString().custom(value => isValidObjectId(value)).custom(async (value, { req }) => {

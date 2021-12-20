@@ -1,6 +1,8 @@
+const { matchedData } = require("express-validator")
 const User = require("../models/User")
 const { Task } = require("../models/Task")
-const { matchedData } = require("express-validator")
+const { handleError } = require("../utils/error")
+
 
 
 exports.handleIndexTask = async (req, res) => {
@@ -10,7 +12,7 @@ exports.handleIndexTask = async (req, res) => {
             data: req.task
         })
     } catch (error) {
-        console.error(error)
+        handleError(error, res)
     }
 }
 
@@ -37,7 +39,7 @@ exports.handleCreateTask = async (req, res) => {
         return res.json({ error: false, data: task })
 
     } catch (error) {
-        console.error(error)
+        handleError(error, res)
     }
 };
 
@@ -56,7 +58,7 @@ exports.handleEditTask = async (req, res) => {
         if (!task) return res.json({ error: true, message: "failed to save" })
         return res.json({ error: false, data: task })
     } catch (error) {
-        console.error(error)
+        handleError(error, res)
     }
 };
 exports.handleDeleteTask = async (req, res) => {
@@ -78,6 +80,6 @@ exports.handleDeleteTask = async (req, res) => {
         return res.json({ error: false, data: task })
 
     } catch (error) {
-        console.error(error)
+        handleError(error, res)
     }
 };
