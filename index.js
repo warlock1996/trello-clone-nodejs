@@ -9,6 +9,7 @@ app.use(bodyParser.json());
 
 app.use(routes);
 
+
 // connect db first
 connectDB().then(() => {
 	app.listen(process.env.PORT_NUMBER, () => {

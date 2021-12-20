@@ -2,7 +2,7 @@ const { Board } = require("../models/Board")
 const { Task } = require("../models/Task")
 const { mail } = require("../utils/mailer");
 const { sign } = require("../utils/jwt");
-
+const mongoose = require("mongoose")
 
 const { OWNER_PERMISSIONS, MEMBER_PERMISSIONS } = require("../utils/samplepermissions")
 
@@ -16,17 +16,21 @@ exports.handleGetBoard = async (req, res) => {
     }
 }
 exports.handleCreateBoard = async (req, res) => {
+    const session = await mongoose.startSession()
+    session.startTransaction()
     try {
         const user = req.user
         const defaultMember = { _id: user._id, name: user.name, permissions: OWNER_PERMISSIONS }
         const board = new Board({
+            _id: new mongoose.Types.ObjectId(),
             name: req.body.name,
             lists: [],
             members: [defaultMember]
         })
-        await board.save()
+        await board.save({ session })
         user.boards.push(board._id)
-        await user.save()
+        await user.save({ session })
+        await session.commitTransaction()
 
         return res.json({
             error: false,
@@ -34,6 +38,9 @@ exports.handleCreateBoard = async (req, res) => {
         })
     } catch (error) {
         console.error(error)
+        return res.status(500).send()
+    } finally {
+        await session.endSession()
     }
 };
 exports.handleEditBoard = async (req, res) => {
