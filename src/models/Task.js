@@ -10,20 +10,10 @@ const TaskSchema = new mongoose.Schema({
     timestamps: true
 });
 
-const TaskSchemaWithSubtask = new mongoose.Schema({
-    task: String,
-    description: String,
-    assignee: { type: mongoose.Types.ObjectId, ref: 'User' },
-    priority: String,
-    reporter: { type: mongoose.Types.ObjectId, ref: 'User' },
-    subtasks: [TaskSchema]
-}, {
-    timestamps: true
-})
+TaskSchema.add({ subtasks: [TaskSchema] })
 
 
-
-exports.TaskSchema = TaskSchemaWithSubtask
-exports.Task = mongoose.model("Tasks", TaskSchemaWithSubtask);
+exports.TaskSchema = TaskSchema
+exports.Task = mongoose.model("Tasks", TaskSchema);
 
 
