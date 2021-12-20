@@ -3,16 +3,27 @@ const mongoose = require("mongoose");
 const TaskSchema = new mongoose.Schema({
     task: String,
     description: String,
-    assignee: mongoose.Types.ObjectId,
+    assignee: { type: mongoose.Types.ObjectId, ref: 'User' },
     priority: String,
-    reporter: mongoose.Types.ObjectId,
-    subtasks: Array
+    reporter: { type: mongoose.Types.ObjectId, ref: 'User' },
 }, {
     timestamps: true
 });
 
+const TaskSchemaWithSubtask = new mongoose.Schema({
+    task: String,
+    description: String,
+    assignee: { type: mongoose.Types.ObjectId, ref: 'User' },
+    priority: String,
+    reporter: { type: mongoose.Types.ObjectId, ref: 'User' },
+    subtasks: [TaskSchema]
+}, {
+    timestamps: true
+})
 
-exports.TaskSchema = TaskSchema
-exports.Task = mongoose.model("Tasks", TaskSchema);
+
+
+exports.TaskSchema = TaskSchemaWithSubtask
+exports.Task = mongoose.model("Tasks", TaskSchemaWithSubtask);
 
 

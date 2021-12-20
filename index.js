@@ -5,13 +5,15 @@ const connectDB = require("./dbconfig");
 const routes = require("./src/routes/index");
 const app = express();
 
+const { Task } = require("./src/models/Task")
+
 app.use(bodyParser.json());
 
 app.use(routes);
 
 
 // connect db first
-connectDB().then(() => {
+connectDB().then(async () => {
 	app.listen(process.env.PORT_NUMBER, () => {
 		console.log("server running on port:", process.env.PORT_NUMBER);
 	});
