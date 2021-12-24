@@ -1,6 +1,5 @@
 const { verify } = require("../utils/jwt");
 const User = require("../models/User")
-const chalk = require("chalk")
 
 exports.checkAuth = async (req, res, next) => {
 	try {
@@ -12,7 +11,10 @@ exports.checkAuth = async (req, res, next) => {
 
 			req.user = user
 
-			console.log(chalk.bgWhiteBright.black('[current user]', req.user.email))
+			if (process.env.NODE_ENV === 'development') {
+				const chalk = require("chalk")
+				console.log(chalk.bgWhiteBright.black('[current user]', req.user.email))
+			}
 			return next()
 		}
 
