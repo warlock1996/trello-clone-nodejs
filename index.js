@@ -1,4 +1,7 @@
-require("./envconfig").configureEnv();
+
+if (process.env.NODE_ENV === 'development') {
+	require("./envconfig").configureEnv();
+}
 const express = require("express");
 const bodyParser = require("body-parser");
 const connectDB = require("./dbconfig");
