@@ -12,6 +12,11 @@ app.use(bodyParser.json());
 app.use(routes);
 
 
+
+app.use('/', (req, res) => {
+	res.render('<h1>Hi, from server !</h1>')
+})
+
 // connect db first
 connectDB().then(async () => {
 	app.listen(process.env.PORT_NUMBER, () => {
