@@ -1,6 +1,6 @@
 const dotenv = require("dotenv");
 
-exports.configureEnv = () => {
+module.exports = configureEnv = () => {
 	try {
 		const result = dotenv.config();
 		if (result.error) throw result.error;

@@ -1,24 +1,18 @@
 
-if (process.env.NODE_ENV === 'development') {
-	require("./envconfig").configureEnv();
-}
 const express = require("express");
 const bodyParser = require("body-parser");
 const connectDB = require("./dbconfig");
+const configureEnv = require("./envconfig")
 const routes = require("./src/routes/index");
+
 const app = express();
 
-const { Task } = require("./src/models/Task")
+// setup env
+configureEnv();
 
+// inject middlewares
 app.use(bodyParser.json());
-
 app.use(routes);
-
-
-
-app.use('/', (req, res) => {
-	res.render('<h1>Hi, from server !</h1>')
-})
 
 // connect db first
 connectDB().then(async () => {
