@@ -16,7 +16,7 @@ app.use(routes);
 
 // connect db first
 connectDB().then(async () => {
-	app.listen(process.env.PORT_NUMBER, () => {
-		console.log("server running on port:", process.env.PORT_NUMBER);
+	app.listen(process.env.PORT, () => {
+		console.log("server running on port:", process.env.PORT);
 	});
 });
