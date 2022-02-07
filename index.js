@@ -1,22 +1,21 @@
+const express = require('express')
+const bodyParser = require('body-parser')
+const connectDB = require('./dbconfig')
+const configureEnv = require('./envconfig')
+const routes = require('./src/routes/index')
 
-const express = require("express");
-const bodyParser = require("body-parser");
-const connectDB = require("./dbconfig");
-const configureEnv = require("./envconfig")
-const routes = require("./src/routes/index");
-
-const app = express();
+const app = express()
 
 // setup env
-configureEnv();
+configureEnv()
 
 // inject middlewares
-app.use(bodyParser.json());
-app.use(routes);
+app.use(bodyParser.json())
+app.use(routes)
 
 // connect db first
 connectDB().then(async () => {
 	app.listen(process.env.PORT, () => {
-		console.log("server running on port:", process.env.PORT);
-	});
-});
+		console.log('server running on port:', process.env.PORT)
+	})
+})

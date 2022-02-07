@@ -11,15 +11,17 @@ const {
 
 const validate = require("../validators/handleValidationResult")
 const {
-	handleGetBoard,
+	getBoard,
+	getAllBoards,
 	handleCreateBoard,
 	handleEditBoard,
 	handleDeleteBoard,
 	handleInviteUser,
-	handleAcceptInvitation
-} = require("../controllers/boardController");
+	handleAcceptInvitation,
+} = require('../controllers/boardController')
 
-router.get("/index", handleGetBoard);
+router.get('/:boardId', getBoard)
+router.get('/getAllBoards', getAllBoards)
 router.post("/create", validate(validateCreateBoard), handleCreateBoard);
 router.post("/edit/:boardId", checkPerms('board', 'update'), validate(validateEditBoard), handleEditBoard);
 router.delete("/delete/:boardId", checkPerms('board', 'delete'), validate(validateDeleteBoard), handleDeleteBoard);
