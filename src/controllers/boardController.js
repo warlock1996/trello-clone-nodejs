@@ -14,12 +14,12 @@ exports.getBoard = async (req, res) => {
 			error: false,
 			data: board,
 		})
-	} catch (e) {
+	} catch (error) {
 		handleError(error, res)
 	}
 }
 
-exports.getAllBoards = async (req, res) => {
+exports.handleIndexAllUserBoards = async (req, res) => {
 	try {
 		const allboards = await Board.find({ 'members._id': req.user._id }, { name: 1, userId: 1 }).exec()
 		const createdBoards = [],
@@ -42,6 +42,7 @@ exports.getAllBoards = async (req, res) => {
 		handleError(error, res)
 	}
 }
+
 exports.handleCreateBoard = async (req, res) => {
 	try {
 		const user = req.user
@@ -67,6 +68,7 @@ exports.handleCreateBoard = async (req, res) => {
 		handleError(error, res)
 	}
 }
+
 exports.handleEditBoard = async (req, res) => {
 	try {
 		const boardId = req.params.boardId,
@@ -88,12 +90,13 @@ exports.handleEditBoard = async (req, res) => {
 		handleError(error, res)
 	}
 }
+
 exports.handleDeleteBoard = async (req, res) => {
 	try {
 		const boardId = req.params.boardId
 		const board = await Board.findByIdAndDelete(boardId)
 		if (!board) return res.json({ error: true, message: 'failed to delete board !' })
-		
+
 		const tasksToBeDeleted = board.lists.flatMap((list) => list.tasks)
 
 		const results = await Task.deleteMany({ _id: { $in: tasksToBeDeleted } })
