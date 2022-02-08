@@ -3,6 +3,7 @@ const bodyParser = require('body-parser')
 const connectDB = require('./dbconfig')
 const configureEnv = require('./envconfig')
 const routes = require('./src/routes/index')
+const cors = require('cors')
 
 const app = express()
 
@@ -10,6 +11,7 @@ const app = express()
 configureEnv()
 
 // inject middlewares
+app.use(cors())
 app.use(bodyParser.json())
 app.use(routes)
 
