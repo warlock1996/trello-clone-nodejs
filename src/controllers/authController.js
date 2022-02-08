@@ -6,22 +6,23 @@ const { sign } = require("../utils/jwt");
 
 exports.handleSignUp = async (req, res) => {
 	try {
-		const { name, email, password, address } = req.body;
-		const hashedPassword = getHash(password);
-		const user = new User({ name, email, password: hashedPassword, address });
-		await user.save();
-		const encodedEmail = await sign({ email: email });
+		const { name, email, password } = req.body
+		const hashedPassword = getHash(password)
+		const user = new User({ name, email, password: hashedPassword })
+		await user.save()
+		const encodedEmail = await sign({ email: email })
 		await mail(
 			email,
-			"successfull signup",
-			"successfully signed up, please visit link to activate account",
-			`<a href=${req.protocol}://${req.hostname}:5000/api/account/activate/${encodedEmail}>
-				Click to activate ${req.protocol}://${req.hostname}:5000/api/account/activate/${encodedEmail}
+			'successfull signup',
+			'successfully signed up, please visit link to activate account',
+			`<a href=http://localhost:8080/account/activate/${encodedEmail}>
+				Click to activate http://localhost:8080/account/activate/${encodedEmail}
 			</a>`
-		);
-		res.json({
-			message: "success",
-		});
+		)
+		return res.json({
+			error: false,
+			message: `Please check your email (${email}) inbox for account activation link !`,
+		})
 	} catch (err) {
 		console.error(err.message);
 		log(err, req);
