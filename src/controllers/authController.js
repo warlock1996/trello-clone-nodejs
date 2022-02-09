@@ -62,8 +62,8 @@ exports.handleActivation = async (req, res) => {
 		await user.save();
 		res.json({
 			error: false,
-			message: "Email verified, Account activated !",
-		});
+			message: `Email verified ${req.user.email}, Account activated !`,
+		})
 	} catch (err) {
 		console.error(err);
 		log(err);
