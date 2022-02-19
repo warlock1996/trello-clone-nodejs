@@ -6,6 +6,7 @@ const { sign } = require('../utils/jwt')
 const { handleError } = require('../utils/error')
 
 const { OWNER_PERMISSIONS, MEMBER_PERMISSIONS } = require('../utils/samplepermissions')
+const { matchedData } = require('express-validator')
 
 exports.getBoard = async (req, res) => {
 	try {
@@ -58,6 +59,7 @@ exports.handleCreateBoard = async (req, res) => {
 			lists: [],
 			members: [defaultMember],
 			userId: user._id,
+			starred: false,
 		})
 		await board.save()
 		return res.json({
@@ -71,15 +73,10 @@ exports.handleCreateBoard = async (req, res) => {
 
 exports.handleEditBoard = async (req, res) => {
 	try {
-		const boardId = req.params.boardId,
-			boardName = req.body.name
-		const board = await Board.findByIdAndUpdate(
-			boardId,
-			{ name: boardName },
-			{
-				returnDocument: 'after',
-			}
-		)
+		const validatedData = matchedData(req, { locations: ['body'] })
+		const board = await Board.findByIdAndUpdate(req.params.boardId, validatedData, {
+			returnDocument: 'after',
+		})
 		if (!board) return res.json({ error: true, message: 'failed to edit board !' })
 
 		return res.json({
@@ -99,12 +96,12 @@ exports.handleDeleteBoard = async (req, res) => {
 
 		const tasksToBeDeleted = board.lists.flatMap((list) => list.tasks)
 
-		const results = await Task.deleteMany({ _id: { $in: tasksToBeDeleted } })
+		const deletedTasks = await Task.deleteMany({ _id: { $in: tasksToBeDeleted } })
 
 		return res.json({
 			error: false,
 			data: board,
-			boardListTaskDetails: results,
+			deletedTasks,
 		})
 	} catch (error) {
 		handleError(error, res)
@@ -112,9 +109,7 @@ exports.handleDeleteBoard = async (req, res) => {
 }
 
 exports.handleInviteUser = async (req, res) => {
-	const boardId = req.params.boardId,
-		emails = req.body.emails
-	emails.forEach(async (email) => {
+	req.body.emails.forEach(async (email) => {
 		const inviteToken = await sign({ email, boardId })
 		await mail(
 			email,
@@ -129,7 +124,6 @@ exports.handleInviteUser = async (req, res) => {
 }
 
 exports.handleAcceptInvitation = async (req, res) => {
-	const { boardId } = req.decodedInviteToken
 	const member = {
 		_id: req.user._id,
 		name: req.user.name,

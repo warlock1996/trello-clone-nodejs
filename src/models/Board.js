@@ -22,6 +22,7 @@ const BoardSchema = new mongoose.Schema(
 		members: [MemberSchema],
 		labels: [LabelsSchema],
 		userId: { type: mongoose.Types.ObjectId, ref: 'User' },
+		starred: Boolean,
 	},
 	{
 		timestamps: true,

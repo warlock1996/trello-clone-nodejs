@@ -14,10 +14,10 @@ const {
 	getBoard,
 	handleIndexAllUserBoards,
 	handleCreateBoard,
-	handleEditBoard,
 	handleDeleteBoard,
 	handleInviteUser,
 	handleAcceptInvitation,
+	handleEditBoard,
 } = require('../controllers/boardController')
 
 router.post('/create', validate(validateCreateBoard), handleCreateBoard)

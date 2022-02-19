@@ -10,10 +10,8 @@ exports.validateCreateBoard = [
 		.isString()
 		.isLength({ min: '3', max: '20' })
 		.custom(async (value, { req }) => {
-			const userBoardIds = req.user.boards
-			const boards = await Board.find({ _id: userBoardIds, name: value }).exec()
-			if (boards.length)
-				return Promise.reject('board with this name already exists !')
+			const board = await Board.findOne({ userId: req.user._id, name: value })
+			if (board) return Promise.reject('board with this name already exists !')
 		}),
 ]
 
@@ -25,11 +23,12 @@ exports.validateEditBoard = [
 		.bail()
 		.isString()
 		.custom(async (value, { req }) => {
-			const boardIndex = req.user.boards.findIndex((b) => b._id == value)
-			if (boardIndex === -1) return Promise.reject('board not found !')
-			req.boardIndex = boardIndex
+			const board = await Board.findById(value)
+			if (!board) return Promise.reject('board not found !')
+			req.board = board
 		}),
 	body('name')
+		.optional()
 		.exists({ checkNull: true, checkFalsy: true })
 		.notEmpty()
 		.bail()
@@ -38,8 +37,15 @@ exports.validateEditBoard = [
 		.isLength({ min: '3', max: '20' })
 		.bail()
 		.custom(async (value, { req }) => {
-			if (req.user.boards[req.boardIndex]['name'] === value)
-				return Promise.reject('board already exists !')
+			const board = await Board.findOne({ name: value })
+			if (board) return Promise.reject('board with this name already exists !')
+		}),
+	body('starred')
+		.optional()
+		.isBoolean()
+		.bail()
+		.custom(async (value, { req }) => {
+			if (req.board.starred == value) return Promise.reject('board already starred !')
 		}),
 ]
 
@@ -51,8 +57,8 @@ exports.validateDeleteBoard = [
 		.bail()
 		.custom((value) => isValidObjectId(value))
 		.custom(async (value, { req }) => {
-			const boardIndex = req.user.boards.findIndex((b) => b._id == value)
-			if (boardIndex === -1) return Promise.reject('board not found !')
+			const board = await Board.findById(value)
+			if (!board) return Promise.reject('board not found !')
 		}),
 ]
 
@@ -94,9 +100,7 @@ exports.validateAcceptInvite = [
 		.bail()
 		.custom(async (value, { req }) => {
 			if (req.user.email !== req.decodedInviteToken.email)
-				return Promise.reject(
-					'you are not authorized to use the invite token !'
-				)
+				return Promise.reject('you are not authorized to use the invite token !')
 		})
 		.bail()
 		.custom(async (value, { req }) => {
