@@ -24,7 +24,7 @@ exports.checkAuth = async (req, res, next) => {
 			message: 'Unauthorized!',
 		})
 	} catch (error) {
-		res.status(401).json({
+		res.status(500).json({
 			error: true,
 			message: error.message,
 		})
