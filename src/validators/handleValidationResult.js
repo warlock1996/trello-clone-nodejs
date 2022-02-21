@@ -6,8 +6,7 @@ const validate = validations => {
 			const result = await validation.run(req)
 			if (result.errors.length) break;
 		}
-
-		const errors = validationResult(req);
+		const errors = validationResult(req)
 		if (!errors.isEmpty()) return res.status(422).send(errors.array());
 
 		next()
