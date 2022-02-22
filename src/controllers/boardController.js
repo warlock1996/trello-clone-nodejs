@@ -7,6 +7,7 @@ const { handleError } = require('../utils/error')
 
 const { OWNER_PERMISSIONS, MEMBER_PERMISSIONS } = require('../utils/samplepermissions')
 const { matchedData } = require('express-validator')
+const Labels = require('../utils/samplelabels')
 
 exports.getBoard = async (req, res) => {
 	try {
@@ -57,6 +58,7 @@ exports.handleCreateBoard = async (req, res) => {
 			_id: new mongoose.Types.ObjectId(),
 			name: req.body.name,
 			lists: [],
+			labels: Labels,
 			members: [defaultMember],
 			userId: user._id,
 			starred: false,

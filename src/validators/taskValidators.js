@@ -94,6 +94,7 @@ exports.validateEditTask = [
 			if (!task) return Promise.reject('task does not exist !')
 			req.task = task
 		}),
+	body().notEmpty().bail().withMessage('empty body !'),
 	body('task')
 		.optional()
 		.exists({ checkNull: true, checkFalsy: true })
@@ -118,6 +119,29 @@ exports.validateEditTask = [
 				if (!req.board.members.find((bm) => bm._id.toString() == v))
 					return Promise.reject('member does not exist in this board !')
 			})
+		}),
+	body('labels')
+		.optional()
+		.exists()
+		.bail()
+		.isArray()
+		.bail()
+		.custom(async (value, { req }) => {
+			value.forEach(async (v) => {
+				if (!req.board.labels.find((label) => label._id.toString() == v))
+					return Promise.reject('label does not exist in this board !')
+			})
+		}),
+	body('date').optional().isObject().bail(),
+	body('date.dueDate').optional().isDate().bail().toDate().bail(),
+	body('date.startDate')
+		.optional()
+		.isDate()
+		.bail()
+		.toDate()
+		.custom(async (value, { req }) => {
+			if (value.getTime() > req.body.date.dueDate)
+				return Promise.reject('dueDate should be greater or equal to startDate')
 		}),
 ]
 

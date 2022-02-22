@@ -10,7 +10,6 @@ const MemberSchema = new mongoose.Schema({
 })
 
 const LabelsSchema = new mongoose.Schema({
-	_id: mongoose.Types.ObjectId,
 	text: String,
 	color: String,
 })

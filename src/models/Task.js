@@ -15,9 +15,8 @@ const TaskSchema = new mongoose.Schema(
 		task: String,
 		description: String,
 		date: {
-			dueDate: Date,
 			startDate: Date,
-			endDate: Date,
+			dueDate: Date,
 		},
 		members: [{ type: mongoose.Types.ObjectId, ref: 'User' }],
 		labels: [{ type: mongoose.Types.ObjectId }],
