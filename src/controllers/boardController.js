@@ -23,7 +23,7 @@ exports.getBoard = async (req, res) => {
 
 exports.handleIndexAllUserBoards = async (req, res) => {
 	try {
-		const allboards = await Board.find({ 'members._id': req.user._id }, { name: 1, userId: 1 }).exec()
+		const allboards = await Board.find({ 'members._id': req.user._id }).exec()
 		const createdBoards = [],
 			invitedBoards = []
 		allboards.forEach((board) => {

@@ -88,17 +88,52 @@ exports.handleDeleteTask = async (req, res) => {
 
 exports.handleMoveTask = async (req, res) => {
 	try {
-		req.board.lists[req.fromListIndex]['tasks'] = req.board.lists[req.fromListIndex]['tasks'].filter(
+		// if both boards are same
+		if (req.fromBoard._id.toString() === req.toBoard._id.toString()) {
+			req.fromBoard.lists[req.fromListIndex]['tasks'] = req.fromBoard.lists[req.fromListIndex]['tasks'].filter(
+				(t) => t._id.toString() != req.params.taskId.toString()
+			)
+			req.fromBoard.lists[req.toListIndex]['tasks'].push(req.params.taskId)
+
+			const isSaved = await req.fromBoard.save()
+			if (!isSaved) return Promise.reject('failed to move task !')
+
+			return res.json({ error: false, message: `Task: ${req.params.taskId} moved to List: ${req.params.toListId}` })
+		}
+
+		req.fromBoard.lists[req.fromListIndex]['tasks'] = req.fromBoard.lists[req.fromListIndex]['tasks'].filter(
 			(t) => t._id.toString() != req.params.taskId.toString()
 		)
-		req.board.lists[req.toListIndex]['tasks'].push(req.params.taskId)
-		const board = await req.board.save()
-		if (!board) return res.json({ error: true, message: 'failed to move task !' })
+		req.toBoard.lists[req.toListIndex]['tasks'].push(req.params.taskId)
+
+		const fromBoard = await req.fromBoard.save()
+		const toBoard = await req.toBoard.save()
+		if (!fromBoard || !toBoard) return res.json({ error: true, message: 'failed to move task !' })
 
 		return res.json({ error: false, message: `Task: ${req.params.taskId} moved to List: ${req.params.toListId}` })
 	} catch (error) {
 		handleError(error, res)
 	}
+}
+
+exports.handleCopyTask = async (req, res) => {
+	const task = await new Task({
+		task: req.body.task,
+		description: req.task.description,
+		date: req.task.date,
+		members: req.body.members ? req.task.members : [],
+		labels: req.body.labels ? req.task.labels : [],
+		reporter: new mongoose.Types.ObjectId(req.user._id),
+		comments: req.body.comments ? req.task.comments : [],
+		attachments: req.body.attachments ? req.task.attachments : [],
+	})
+
+	const isTaskSaved = await task.save()
+	if (!isTaskSaved) return Promise.reject('failed to save task !')
+	req.toBoard.lists[req.toListIndex].tasks = [...req.toBoard.lists[req.toListIndex].tasks, task._id]
+	const isBoardSaved = await req.toBoard.save()
+	if (!isBoardSaved) return Promise.reject('failed to save board !')
+	return res.json({ error: true, message: 'task copied successfully !' })
 }
 
 exports.handleGetTasksByList = async (req, res) => {
@@ -111,4 +146,34 @@ exports.handleGetTasksByList = async (req, res) => {
 	} catch (error) {
 		handleError(error, res)
 	}
+}
+
+exports.handleTaskAttachmentUpload = async (req, res) => {
+	req.files.forEach((file) => {
+		req.task.attachments.push({
+			_id: new mongoose.Types.ObjectId(),
+			name: file.filename,
+			uploader: req.user._id,
+			isCover: false,
+		})
+	})
+	const task = await req.task.save()
+	if (!task) return res.json({ error: true, message: 'failed to upload attachment !' })
+
+	return res.json({ error: false, data: task })
+}
+
+exports.handleCreateTaskComment = async (req, res) => {
+	req.task.comments.push({
+		_id: new mongoose.Types.ObjectId(),
+		comment: req.body.comment,
+		creator: req.user._id,
+	})
+	const task = await req.task.save()
+	if (!task) return res.json({ error: true, message: 'failed to create comment !' })
+	return res.json({
+		error: false,
+		data: task,
+		message: 'comment created succesfully !',
+	})
 }

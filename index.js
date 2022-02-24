@@ -11,6 +11,7 @@ const app = express()
 configureEnv()
 
 // inject middlewares
+app.use('/static', express.static('uploads'))
 app.use(cors())
 app.use(bodyParser.json())
 app.use(routes)

@@ -32,7 +32,7 @@ exports.validateCreateList = [
 		.exists()
 		.bail()
 		.isString()
-		.isLength({ min: '2', max: '20' })
+		.isLength({ min: '2', max: '50' })
 		.custom(async (value, { req }) => {
 			const boardLists = req.board.lists
 			if (boardLists.findIndex((l) => l.name === value) >= 0) {

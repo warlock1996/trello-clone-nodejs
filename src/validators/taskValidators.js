@@ -133,11 +133,9 @@ exports.validateEditTask = [
 			})
 		}),
 	body('date').optional().isObject().bail(),
-	body('date.dueDate').optional().isDate().bail().toDate().bail(),
+	body('date.dueDate').optional().toDate().bail(),
 	body('date.startDate')
 		.optional()
-		.isDate()
-		.bail()
 		.toDate()
 		.custom(async (value, { req }) => {
 			if (value.getTime() > req.body.date.dueDate)
@@ -176,7 +174,7 @@ exports.validateDeleteTask = [
 ]
 
 exports.validateMoveTask = [
-	param('boardId')
+	param('fromBoardId')
 		.exists()
 		.isString()
 		.custom((value) => isValidObjectId(value))
@@ -184,14 +182,24 @@ exports.validateMoveTask = [
 			const board = await Board.findOne({ _id: value, 'members._id': req.user._id })
 			// code yet to be added for permission check
 			if (!board) return Promise.reject('board does not exist for this user !')
-			req.board = board
+			req.fromBoard = board
+		}),
+	param('toBoardId')
+		.exists()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			const board = await Board.findOne({ _id: value, 'members._id': req.user._id })
+			// code yet to be added for permission check
+			if (!board) return Promise.reject('board does not exist for this user !')
+			req.toBoard = board
 		}),
 	param('fromListId')
 		.exists()
 		.isString()
 		.custom((value) => isValidObjectId(value))
 		.custom(async (value, { req }) => {
-			const fromListIndex = req.board.lists.findIndex((l) => l._id == value)
+			const fromListIndex = req.fromBoard.lists.findIndex((l) => l._id == value)
 			if (fromListIndex === -1) return Promise.reject('source list does not exist for this board !')
 			req.fromListIndex = fromListIndex
 		}),
@@ -200,7 +208,7 @@ exports.validateMoveTask = [
 		.isString()
 		.custom((value) => isValidObjectId(value))
 		.custom(async (value, { req }) => {
-			const toListIndex = req.board.lists.findIndex((l) => l._id == value)
+			const toListIndex = req.toBoard.lists.findIndex((l) => l._id == value)
 			if (toListIndex === -1) return Promise.reject('target list does not exist for this board !')
 			req.toListIndex = toListIndex
 		}),
@@ -209,12 +217,69 @@ exports.validateMoveTask = [
 		.isString()
 		.custom((value) => isValidObjectId(value))
 		.custom(async (value, { req }) => {
-			const taskIndex = req.board.lists[req.fromListIndex]['tasks'].findIndex((t) => t._id.toString() == value)
+			const taskIndex = req.toBoard.lists[req.fromListIndex]['tasks'].findIndex((t) => t._id.toString() == value)
 			if (taskIndex === -1) return Promise.reject('task does not belong to source list !')
 			const task = await Task.findById(value)
 			if (!task) return Promise.reject('task does not exist !')
 			req.task = task
 		}),
+]
+
+exports.validateCopyTask = [
+	param('fromBoardId')
+		.exists()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			const board = await Board.findOne({ _id: value, 'members._id': req.user._id })
+			// code yet to be added for permission check
+			if (!board) return Promise.reject('board does not exist for this user !')
+			req.fromBoard = board
+		}),
+	param('toBoardId')
+		.exists()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			const board = await Board.findOne({ _id: value, 'members._id': req.user._id })
+			// code yet to be added for permission check
+			if (!board) return Promise.reject('board does not exist for this user !')
+			req.toBoard = board
+		}),
+	param('fromListId')
+		.exists()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			const fromListIndex = req.fromBoard.lists.findIndex((l) => l._id == value)
+			if (fromListIndex === -1) return Promise.reject('source list does not exist for this board !')
+			req.fromListIndex = fromListIndex
+		}),
+	param('toListId')
+		.exists()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			const toListIndex = req.toBoard.lists.findIndex((l) => l._id == value)
+			if (toListIndex === -1) return Promise.reject('target list does not exist for this board !')
+			req.toListIndex = toListIndex
+		}),
+	param('fromTaskId')
+		.exists()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			const taskIndex = req.toBoard.lists[req.fromListIndex]['tasks'].findIndex((t) => t._id.toString() == value)
+			if (taskIndex === -1) return Promise.reject('task does not belong to source list !')
+			const task = await Task.findById(value)
+			if (!task) return Promise.reject('task does not exist !')
+			req.task = task
+		}),
+	body('task').exists().isString().trim(),
+	body('attachments').optional().isBoolean(),
+	body('comments').optional().isBoolean(),
+	body('members').optional().isBoolean(),
+	body('labels').optional().isBoolean(),
 ]
 
 exports.validateGetTasksByList = [
@@ -237,4 +302,68 @@ exports.validateGetTasksByList = [
 			if (listIndex === -1) return Promise.reject('list does not exist for this board !')
 			req.list = req.board.lists[listIndex]
 		}),
+]
+
+exports.validateTaskAttachmentUpload = [
+	param('boardId')
+		.exists()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			const board = await Board.findOne({ _id: value, 'members._id': req.user._id })
+			if (!board) return Promise.reject('board does not exist for this user !')
+			req.board = board
+		}),
+	param('listId')
+		.exists()
+		.bail()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			const listIndex = req.board.lists.findIndex((l) => l._id == value)
+			if (listIndex === -1) return Promise.reject('list does not exist for this board !')
+			req.list = req.board.lists[listIndex]
+		}),
+	param('taskId')
+		.exists()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			const task = await Task.findById(value)
+			if (!task) return Promise.reject('task does not exist !')
+			if (!req.files) return Promise.reject('file does not exist on req object !')
+			req.task = task
+		}),
+]
+
+exports.validateCreateTaskComment = [
+	param('boardId')
+		.exists()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			const board = await Board.findOne({ _id: value, 'members._id': req.user._id })
+			if (!board) return Promise.reject('board does not exist for this user !')
+			req.board = board
+		}),
+	param('listId')
+		.exists()
+		.bail()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			const listIndex = req.board.lists.findIndex((l) => l._id == value)
+			if (listIndex === -1) return Promise.reject('list does not exist for this board !')
+			req.list = req.board.lists[listIndex]
+		}),
+	param('taskId')
+		.exists()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			const task = await Task.findById(value)
+			if (!task) return Promise.reject('task does not exist !')
+			req.task = task
+		}),
+	body('comment').exists().isString().trim(),
 ]

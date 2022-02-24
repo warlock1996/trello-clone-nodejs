@@ -12,14 +12,14 @@ exports.handleSignUp = async (req, res) => {
 		const user = new User({ name, email, password: hashedPassword })
 		await user.save()
 		const encodedEmail = await sign({ email: email })
-		await mail(
-			email,
-			'successfull signup',
-			'successfully signed up, please visit link to activate account',
-			`<a href=http://localhost:8080/account/activate/${encodedEmail}>
-				Click to activate http://localhost:8080/account/activate/${encodedEmail}
-			</a>`
-		)
+		// await mail(
+		// 	email,
+		// 	'successfull signup',
+		// 	'successfully signed up, please visit link to activate account',
+		// 	`<a href=http://localhost:8080/account/activate/${encodedEmail}>
+		// 		Click to activate http://localhost:8080/account/activate/${encodedEmail}
+		// 	</a>`
+		// )
 		return res.json({
 			error: false,
 			message: `Please check your email (${email}) inbox for account activation link !`,

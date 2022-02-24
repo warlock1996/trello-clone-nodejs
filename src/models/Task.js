@@ -1,14 +1,27 @@
 const mongoose = require('mongoose')
 
-const AttachmentSchema = new mongoose.Schema({
-	_id: mongoose.Types.ObjectId,
-	url: String,
-})
+const AttachmentSchema = new mongoose.Schema(
+	{
+		_id: mongoose.Types.ObjectId,
+		name: String,
+		uploader: mongoose.Types.ObjectId,
+		isCover: Boolean,
+	},
+	{
+		timestamps: true,
+	}
+)
 
-const CommentSchema = new mongoose.Schema({
-	_id: mongoose.Types.ObjectId,
-	comment: String,
-})
+const CommentSchema = new mongoose.Schema(
+	{
+		_id: mongoose.Types.ObjectId,
+		comment: String,
+		creator: mongoose.Types.ObjectId,
+	},
+	{
+		timestamps: true,
+	}
+)
 
 const TaskSchema = new mongoose.Schema(
 	{
