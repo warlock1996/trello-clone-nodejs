@@ -367,3 +367,45 @@ exports.validateCreateTaskComment = [
 		}),
 	body('comment').exists().isString().trim(),
 ]
+
+exports.validateMakeCover = [
+	param('boardId')
+		.exists()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			const board = await Board.findOne({ _id: value, 'members._id': req.user._id })
+			if (!board) return Promise.reject('board does not exist for this user !')
+			req.board = board
+		}),
+	param('listId')
+		.exists()
+		.bail()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			const listIndex = req.board.lists.findIndex((l) => l._id == value)
+			if (listIndex === -1) return Promise.reject('list does not exist for this board !')
+			req.list = req.board.lists[listIndex]
+		}),
+	param('taskId')
+		.exists()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			if (!req.list.tasks.find((listTask) => listTask._id.toString() === value))
+				return Promise.reject('task does not exist on this list !')
+			const task = await Task.findById(value)
+			console.log(task)
+			if (!task) return Promise.reject('task does not exist !')
+			req.task = task
+		}),
+	param('attachmentId')
+		.exists()
+		.isString()
+		.custom((value) => isValidObjectId(value))
+		.custom(async (value, { req }) => {
+			const attachmentIndex = req.task.attachments.findIndex((att) => att._id.toString() == value)
+			if (attachmentIndex === -1) return Promise.reject('attachment does not exist !')
+		}),
+]

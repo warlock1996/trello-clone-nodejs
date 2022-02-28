@@ -13,6 +13,7 @@ const {
 	validateCopyTask,
 	validateTaskAttachmentUpload,
 	validateCreateTaskComment,
+	validateMakeCover,
 } = require('../validators/taskValidators')
 const validate = require('../validators/handleValidationResult')
 const {
@@ -25,6 +26,7 @@ const {
 	handleCopyTask,
 	handleTaskAttachmentUpload,
 	handleCreateTaskComment,
+	handleAttachmentMakeCover,
 } = require('../controllers/taskController')
 
 router.get('/index/:boardId/:listId/:taskId', checkPerms('task', 'read'), validate(validateIndexTask), handleIndexTask)
@@ -54,6 +56,13 @@ router.post(
 	multer.array('files'),
 	validate(validateTaskAttachmentUpload),
 	handleTaskAttachmentUpload
+)
+
+router.post(
+	'/attachment/makecover/:boardId/:listId/:taskId/:attachmentId',
+	checkPerms('task', 'update'),
+	validate(validateMakeCover),
+	handleAttachmentMakeCover
 )
 
 router.post('/comment/:boardId/:listId/:taskId', validate(validateCreateTaskComment), handleCreateTaskComment)

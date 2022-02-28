@@ -76,7 +76,7 @@ exports.validateInviteUser = [
 		}),
 	body('emails')
 		.exists({ checkNull: true, checkFalsy: true })
-		.withMessage('expected emails property on body')
+		.withMessage('expected emails[] on body')
 		.bail()
 		.isArray({ min: 1, max: 5 })
 		.withMessage('emails should be an array with atleast one element !')
@@ -84,6 +84,11 @@ exports.validateInviteUser = [
 		.customSanitizer((value, { req }) => {
 			// remove current user from emails
 			return value.filter((email) => email !== req.user.email)
+		})
+		.customSanitizer(async (value, { req }) => {
+			const emails = await User.find({ email: { $in: value } }).exec()
+			// verify emails from database and keep only matching emails
+			return value.filter((email) => emails.find((em) => em.email === email))
 		}),
 ]
 
@@ -108,4 +113,27 @@ exports.validateAcceptInvite = [
 			if (!board) return Promise.reject('board not found !')
 			req.board = board
 		}),
+]
+
+exports.validateSearchMembers = [
+	param('boardId')
+		.exists({ checkNull: true, checkFalsy: true })
+		.bail()
+		.notEmpty()
+		.bail()
+		.isString()
+		.custom(async (value, { req }) => {
+			const board = await Board.findById(value)
+			if (!board) return Promise.reject('board not found !')
+			req.board = board
+		}),
+	query('search')
+		.exists({ checkNull: true, checkFalsy: true })
+		.bail()
+		.notEmpty({ checkNull: true, checkFalsy: true })
+		.bail()
+		.isString()
+		.bail()
+		.trim()
+		.unescape(),
 ]

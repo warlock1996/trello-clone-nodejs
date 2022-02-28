@@ -3,7 +3,7 @@ exports.sendResponse = (response, status, data) => {
 };
 
 exports.handleError = (error, res) => {
-	console.error(error)
+	console.error(error.message)
 	return res.status(500).json({
 		error: true,
 		message: 'SERVER ERROR'

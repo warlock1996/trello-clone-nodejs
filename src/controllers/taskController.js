@@ -149,18 +149,38 @@ exports.handleGetTasksByList = async (req, res) => {
 }
 
 exports.handleTaskAttachmentUpload = async (req, res) => {
-	req.files.forEach((file) => {
-		req.task.attachments.push({
-			_id: new mongoose.Types.ObjectId(),
-			name: file.filename,
-			uploader: req.user._id,
-			isCover: false,
+	try {
+		req.files.forEach((file) => {
+			req.task.attachments.push({
+				_id: new mongoose.Types.ObjectId(),
+				name: file.filename,
+				uploader: req.user._id,
+				isCover: false,
+			})
 		})
-	})
-	const task = await req.task.save()
-	if (!task) return res.json({ error: true, message: 'failed to upload attachment !' })
+		const task = await req.task.save()
+		if (!task) return res.json({ error: true, message: 'failed to upload attachment !' })
 
-	return res.json({ error: false, data: task })
+		return res.json({ error: false, data: task })
+	} catch (error) {
+		handleError(error, res)
+	}
+}
+
+exports.handleAttachmentMakeCover = async (req, res) => {
+	try {
+		req.task.attachments = req.task.attachments.map((att) => {
+			if (att._id.toString() === req.params.attachmentId) {
+				return { _id: att._id, name: att.name, uploader: att.uploader, isCover: true }
+			}
+			return { _id: att._id, name: att.name, uploader: att.uploader, isCover: false }
+		})
+		const task = await req.task.save()
+		if (!task) return res.json({ error: true, message: 'failed to make attachment cover !' })
+		return res.json({ error: false, data: task })
+	} catch (error) {
+		handleError(error, res)
+	}
 }
 
 exports.handleCreateTaskComment = async (req, res) => {

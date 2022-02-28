@@ -8,6 +8,7 @@ const { handleError } = require('../utils/error')
 const { OWNER_PERMISSIONS, MEMBER_PERMISSIONS } = require('../utils/samplepermissions')
 const { matchedData } = require('express-validator')
 const Labels = require('../utils/samplelabels')
+const User = require('../models/User')
 
 exports.getBoard = async (req, res) => {
 	try {
@@ -111,9 +112,9 @@ exports.handleDeleteBoard = async (req, res) => {
 }
 
 exports.handleInviteUser = async (req, res) => {
-	req.body.emails.forEach(async (email) => {
-		const inviteToken = await sign({ email, boardId })
-		await mail(
+	const promises = req.body.emails.map(async (email) => {
+		const inviteToken = await sign({ email, boardId: req.params.boardId })
+		return await mail(
 			email,
 			'Board Invite',
 			'you are invited to the trello board !',
@@ -122,7 +123,8 @@ exports.handleInviteUser = async (req, res) => {
 			</a>`
 		)
 	})
-	return res.json({ error: false, message: 'invites sent !' })
+	const settled = await Promise.allSettled(promises)
+	return res.json({ error: false, message: 'invites sent !', data: settled })
 }
 
 exports.handleAcceptInvitation = async (req, res) => {
@@ -141,4 +143,25 @@ exports.handleAcceptInvitation = async (req, res) => {
 	await req.board.save()
 
 	return res.json({ error: false, message: 'invitation accepted !' })
+}
+
+exports.handleSearchMembers = async (req, res) => {
+	try {
+		const { members } = await Board.findById(req.params.boardId, { 'members._id': 1, _id: -1 }).lean()
+		const results = await User.find(
+			{ _id: { $not: { $in: members } }, email: { $regex: req.query.search, $options: 'i' } },
+			{
+				name: 1,
+				email: 1,
+			}
+		)
+			.lean()
+			.exec()
+		return res.json({
+			error: false,
+			data: results,
+		})
+	} catch (error) {
+		handleError(error, res)
+	}
 }
