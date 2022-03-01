@@ -133,7 +133,7 @@ exports.handleCopyTask = async (req, res) => {
 	req.toBoard.lists[req.toListIndex].tasks = [...req.toBoard.lists[req.toListIndex].tasks, task._id]
 	const isBoardSaved = await req.toBoard.save()
 	if (!isBoardSaved) return Promise.reject('failed to save board !')
-	return res.json({ error: true, message: 'task copied successfully !' })
+	return res.json({ error: false, message: 'task copied successfully !' })
 }
 
 exports.handleGetTasksByList = async (req, res) => {
@@ -171,7 +171,7 @@ exports.handleAttachmentMakeCover = async (req, res) => {
 	try {
 		req.task.attachments = req.task.attachments.map((att) => {
 			if (att._id.toString() === req.params.attachmentId) {
-				return { _id: att._id, name: att.name, uploader: att.uploader, isCover: true }
+				return { _id: att._id, name: att.name, uploader: att.uploader, isCover: req.body.isCover }
 			}
 			return { _id: att._id, name: att.name, uploader: att.uploader, isCover: false }
 		})

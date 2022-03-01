@@ -408,4 +408,5 @@ exports.validateMakeCover = [
 			const attachmentIndex = req.task.attachments.findIndex((att) => att._id.toString() == value)
 			if (attachmentIndex === -1) return Promise.reject('attachment does not exist !')
 		}),
+	body('isCover').exists({ checkNull: true, checkFalsy: false }).isBoolean(),
 ]
