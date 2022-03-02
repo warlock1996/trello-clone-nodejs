@@ -113,12 +113,12 @@ exports.handleDeleteBoard = async (req, res) => {
 
 exports.handleInviteUser = async (req, res) => {
 	const promises = req.body.emails.map(async (email) => {
-		const inviteToken = await sign({ email, boardId: req.params.boardId })
+		const inviteToken = await sign({ email, boardId: req.params.boardId, board: req.board.name })
 		return await mail(
 			email,
 			'Board Invite',
 			'you are invited to the trello board !',
-			`<a href=${req.protocol}://${req.hostname}:5000/api/board/accept-invitation/${inviteToken}>
+			`<a href=${process.env.BOARD_INVITE_ADDRESS}/${inviteToken}>
 				Accept Invitation
 			</a>`
 		)
@@ -142,7 +142,7 @@ exports.handleAcceptInvitation = async (req, res) => {
 	req.board.members.push(member)
 	await req.board.save()
 
-	return res.json({ error: false, message: 'invitation accepted !' })
+	return res.json({ error: false, message: `you have been added as a collaborator to ${req.board.name}` })
 }
 
 exports.handleSearchMembers = async (req, res) => {

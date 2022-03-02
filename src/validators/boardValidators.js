@@ -73,6 +73,7 @@ exports.validateInviteUser = [
 		.custom(async (value, { req }) => {
 			const board = await Board.findById(value)
 			if (!board) return Promise.reject('board not found for this user !')
+			req.board = board
 		}),
 	body('emails')
 		.exists({ checkNull: true, checkFalsy: true })

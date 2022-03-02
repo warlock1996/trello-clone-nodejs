@@ -217,7 +217,7 @@ exports.validateMoveTask = [
 		.isString()
 		.custom((value) => isValidObjectId(value))
 		.custom(async (value, { req }) => {
-			const taskIndex = req.toBoard.lists[req.fromListIndex]['tasks'].findIndex((t) => t._id.toString() == value)
+			const taskIndex = req.fromBoard.lists[req.fromListIndex]['tasks'].findIndex((t) => t._id.toString() == value)
 			if (taskIndex === -1) return Promise.reject('task does not belong to source list !')
 			const task = await Task.findById(value)
 			if (!task) return Promise.reject('task does not exist !')
@@ -275,7 +275,7 @@ exports.validateCopyTask = [
 			if (!task) return Promise.reject('task does not exist !')
 			req.task = task
 		}),
-	body('task').exists().isString().trim(),
+	body('task').exists().isString().isLength({ min: 1 }).trim(),
 	body('attachments').optional().isBoolean(),
 	body('comments').optional().isBoolean(),
 	body('members').optional().isBoolean(),
