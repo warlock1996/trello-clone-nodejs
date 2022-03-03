@@ -114,11 +114,11 @@ exports.handleDeleteBoard = async (req, res) => {
 exports.handleInviteUser = async (req, res) => {
 	const promises = req.body.emails.map(async (email) => {
 		const inviteToken = await sign({ email, boardId: req.params.boardId, board: req.board.name })
-		return await mail(
+		return mail(
 			email,
 			'Board Invite',
 			'you are invited to the trello board !',
-			`<a href=${process.env.BOARD_INVITE_ADDRESS}/${inviteToken}>
+			`<a href=${process.env.FRONTEND_SERVER_ADDR}/accept-invitation/${inviteToken}>
 				Accept Invitation
 			</a>`
 		)

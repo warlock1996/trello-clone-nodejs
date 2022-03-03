@@ -7,15 +7,15 @@ const transport = nodemailer.createTransport({
 		pass: "8e03062ea13cac",
 	},
 });
-const mail = async (to, subject, text, html) => {
-	await transport.sendMail({
-		from: "warlock1996",
+const mail = (to, subject, text, html) => {
+	return transport.sendMail({
+		from: 'warlock1996',
 		to,
 		subject,
 		text,
 		html,
-	});
-};
+	})
+}
 
 exports.transport = transport;
 exports.mail = mail

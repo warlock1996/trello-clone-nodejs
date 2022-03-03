@@ -7,7 +7,7 @@ const validate = validations => {
 			if (result.errors.length) break;
 		}
 		const errors = validationResult(req)
-		if (!errors.isEmpty()) return res.status(422).send(errors.array());
+		if (!errors.isEmpty()) return res.status(422).send(errors.mapped())
 
 		next()
 

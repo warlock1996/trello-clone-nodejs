@@ -12,14 +12,17 @@ exports.handleSignUp = async (req, res) => {
 		const user = new User({ name, email, password: hashedPassword })
 		await user.save()
 		const encodedEmail = await sign({ email: email })
-		// await mail(
-		// 	email,
-		// 	'successfull signup',
-		// 	'successfully signed up, please visit link to activate account',
-		// 	`<a href=http://localhost:8080/account/activate/${encodedEmail}>
-		// 		Click to activate http://localhost:8080/account/activate/${encodedEmail}
-		// 	</a>`
-		// )
+		const status = await mail(
+			email,
+			'successfull signup',
+			'successfully signed up, please visit link to activate account',
+			`<a href=${process.env.FRONTEND_SERVER_ADDR}/account/activate/${encodedEmail}>
+				Click to activate ${process.env.FRONTEND_SERVER_ADDR}/account/activate/${encodedEmail}
+			</a>`
+		)
+		if (!status.accepted.includes(email))
+			return res.json({ error: false, message: 'user registered, failed to send email activation link' })
+
 		return res.json({
 			error: false,
 			message: `Please check your email (${email}) inbox for account activation link !`,
