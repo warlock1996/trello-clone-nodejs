@@ -64,7 +64,17 @@ exports.validateCreateTask = [
 			if (!task) return Promise.reject('task does not exist !')
 			req.task = task
 		}),
-	body('task').exists({ checkNull: true, checkFalsy: true }).bail().notEmpty().bail().isLength({ min: 1, max: 500 }),
+	body('task')
+		.exists({ checkNull: true, checkFalsy: true })
+		.bail()
+		.isString()
+		.bail()
+		.withMessage('task name must be string !')
+		.notEmpty()
+		.bail()
+		.withMessage('task name must not be empty !')
+		.trim()
+		.isLength({ min: 1, max: 100 }),
 ]
 
 exports.validateEditTask = [
