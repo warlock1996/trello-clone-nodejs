@@ -40,7 +40,7 @@ exports.handleLogin = async (req, res) => {
 	try {
 		const user = req.user
 		const encodedToken = await sign(
-			{ email: user.email, subject: 'ACCESSTOKEN' },
+			{ email: user.email, name: user.name, subject: 'ACCESSTOKEN' },
 			{ expiresIn: process.env.JWT_EXPIRY }
 		)
 		user.token = encodedToken

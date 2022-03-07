@@ -80,7 +80,7 @@ exports.validateInviteUser = [
 		.withMessage('expected emails[] on body')
 		.bail()
 		.isArray({ min: 1, max: 5 })
-		.withMessage('emails should be an array with atleast one element !')
+		.withMessage('emails should be an array with atleast one element and maximun 5 elements !')
 		.bail()
 		.customSanitizer((value, { req }) => {
 			// remove current user from emails
