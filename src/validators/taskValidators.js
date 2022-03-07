@@ -406,7 +406,6 @@ exports.validateMakeCover = [
 			if (!req.list.tasks.find((listTask) => listTask._id.toString() === value))
 				return Promise.reject('task does not exist on this list !')
 			const task = await Task.findById(value)
-			console.log(task)
 			if (!task) return Promise.reject('task does not exist !')
 			req.task = task
 		}),
