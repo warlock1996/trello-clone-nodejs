@@ -3,7 +3,7 @@ let db;
 const getConnection = async () => {
         try {
             if (db) return db
-            db = await mongoose.connect(process.env.MONGO_URI_DEV)
+            db = await mongoose.connect(process.env.MONGO_URI_PROD)
             console.log("DB connected !")
             return db
             
