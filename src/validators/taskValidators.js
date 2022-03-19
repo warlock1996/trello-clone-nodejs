@@ -54,16 +54,6 @@ exports.validateCreateTask = [
 			if (listIndex === -1) return Promise.reject('list does not exist for this board !')
 			req.listIndex = listIndex
 		}),
-	param('taskId')
-		.optional()
-		.exists({ checkNull: true, checkFalsy: true })
-		.notEmpty()
-		.custom(async (value, { req }) => {
-			if (!isValidObjectId(value)) return Promise.reject('invalid object id')
-			const task = await Task.findById(value)
-			if (!task) return Promise.reject('task does not exist !')
-			req.task = task
-		}),
 	body('task')
 		.exists({ checkNull: true, checkFalsy: true })
 		.bail()
@@ -274,7 +264,7 @@ exports.validateCopyTask = [
 			if (toListIndex === -1) return Promise.reject('target list does not exist for this board !')
 			req.toListIndex = toListIndex
 		}),
-	param('fromTaskId')
+	param('taskId')
 		.exists()
 		.isString()
 		.custom((value) => isValidObjectId(value))

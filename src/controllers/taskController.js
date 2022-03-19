@@ -17,9 +17,7 @@ exports.handleIndexTask = async (req, res) => {
 exports.handleCreateTask = async (req, res) => {
 	try {
 		const board = req.board,
-			listIndex = req.listIndex,
-			parentTask = req.task || null
-
+			listIndex = req.listIndex
 		const task = new Task({
 			task: req.body.task,
 			description: '',
@@ -34,12 +32,6 @@ exports.handleCreateTask = async (req, res) => {
 			comments: [],
 			attachments: [],
 		})
-		if (parentTask) {
-			parentTask.subtasks.push(task)
-			await parentTask.save()
-			return res.json({ error: false, data: parentTask })
-		}
-
 		await task.save()
 		board.lists[listIndex]['tasks'].push(task._id)
 		await board.save()
@@ -64,13 +56,6 @@ exports.handleEditTask = async (req, res) => {
 
 exports.handleDeleteTask = async (req, res) => {
 	try {
-		if (req.subtaskIndex >= 0) {
-			req.task.subtasks = req.task.subtasks.filter((st) => st._id != req.params.subtaskId)
-			const task = await req.task.save()
-			if (!task) return res.json({ error: true, message: 'failed to delete subtask !' })
-			return res.json({ error: false, data: task })
-		}
-
 		const task = await Task.findByIdAndDelete(req.params.taskId)
 		if (!task) return res.json({ error: true, message: 'failed to delete task !' })
 
@@ -144,7 +129,7 @@ exports.handleGetTasksByList = async (req, res) => {
 		const list = req.list
 		const taskIds = list.tasks
 		if (taskIds.length === 0) return res.json({ error: false, data: [], message: 'list is empty' })
-		const tasks = await Task.find({ _id: { $in: taskIds } })
+		const tasks = await Task.find({ _id: { $in: taskIds } }).exec()
 		return res.json({ error: false, data: tasks })
 	} catch (error) {
 		handleError(error, res)

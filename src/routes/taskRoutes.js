@@ -38,21 +38,24 @@ router.get(
 	handleGetTasksByList
 )
 router.post(
-	'/copy/:fromBoardId/:toBoardId/:fromListId/:toListId/:fromTaskId',
-	// checkPerms('task', 'update', { boardId: 'fromBoardId' }),
+	'/copy/:fromBoardId/:toBoardId/:fromListId/:toListId/:taskId',
+	checkPerms('task', 'update', 'fromBoardId'),
+	checkPerms('task', 'update', 'toBoardId'),
 	validate(validateCopyTask),
 	handleCopyTask
 )
 
 router.post(
 	'/move/:fromBoardId/:toBoardId/:fromListId/:toListId/:taskId',
-	// checkPerms('task', 'update'),
+	checkPerms('task', 'update', 'fromBoardId'),
+	checkPerms('task', 'update', 'toBoardId'),
 	validate(validateMoveTask),
 	handleMoveTask
 )
 
 router.post(
 	'/upload/:boardId/:listId/:taskId',
+	checkPerms('task', 'update'),
 	multer.array('files'),
 	validate(validateTaskAttachmentUpload),
 	handleTaskAttachmentUpload
@@ -65,22 +68,17 @@ router.post(
 	handleAttachmentMakeCover
 )
 
-router.post('/comment/:boardId/:listId/:taskId', validate(validateCreateTaskComment), handleCreateTaskComment)
-
 router.post(
-	'/create/:boardId/:listId/:taskId?',
-	checkPerms('task', 'create'),
-	validate(validateCreateTask),
-	handleCreateTask
-)
-router.post(
-	'/edit/:boardId/:listId/:taskId/:subtaskId?',
+	'/comment/:boardId/:listId/:taskId',
 	checkPerms('task', 'update'),
-	validate(validateEditTask),
-	handleEditTask
+	validate(validateCreateTaskComment),
+	handleCreateTaskComment
 )
+
+router.post('/create/:boardId/:listId', checkPerms('task', 'create'), validate(validateCreateTask), handleCreateTask)
+router.post('/edit/:boardId/:listId/:taskId', checkPerms('task', 'update'), validate(validateEditTask), handleEditTask)
 router.delete(
-	'/delete/:boardId/:listId/:taskId/:subtaskId?',
+	'/delete/:boardId/:listId/:taskId',
 	checkPerms('task', 'delete'),
 	validate(validateDeleteTask),
 	handleDeleteTask
