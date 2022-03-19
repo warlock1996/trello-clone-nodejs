@@ -1,7 +1,8 @@
 const { verify } = require('../utils/jwt')
 const User = require('../models/User')
 
-exports.checkAuth = async (req, res, next) => {
+
+const checkAuth = async (req, res, next) => {
 	try {
 		const bearerToken = req.get('Authorization').split(' ')[1]
 		if (bearerToken) {
@@ -10,8 +11,7 @@ exports.checkAuth = async (req, res, next) => {
 				email: decoded.email,
 				token: bearerToken,
 			})
-			if (!user)
-				return res.status(401).json({ error: true, message: 'user not found!' })
+			if (!user) return res.status(401).json({ error: true, message: 'user not found!' })
 
 			req.user = user
 
@@ -30,3 +30,5 @@ exports.checkAuth = async (req, res, next) => {
 		})
 	}
 }
+
+module.exports = checkAuth

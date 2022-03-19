@@ -117,23 +117,26 @@ exports.handleMoveTask = async (req, res) => {
 }
 
 exports.handleCopyTask = async (req, res) => {
-	const task = await new Task({
-		task: req.body.task,
-		description: req.task.description,
-		date: req.task.date,
-		members: req.body.members ? req.task.members : [],
-		labels: req.body.labels ? req.task.labels : [],
-		reporter: new mongoose.Types.ObjectId(req.user._id),
-		comments: req.body.comments ? req.task.comments : [],
-		attachments: req.body.attachments ? req.task.attachments : [],
-	})
-
-	const isTaskSaved = await task.save()
-	if (!isTaskSaved) return Promise.reject('failed to save task !')
-	req.toBoard.lists[req.toListIndex].tasks = [...req.toBoard.lists[req.toListIndex].tasks, task._id]
-	const isBoardSaved = await req.toBoard.save()
-	if (!isBoardSaved) return Promise.reject('failed to save board !')
-	return res.json({ error: false, message: 'task copied successfully !' })
+	try {
+		const task = await new Task({
+			task: req.body.task,
+			description: req.task.description,
+			date: req.task.date,
+			members: req.body.members ? req.task.members : [],
+			labels: req.body.labels ? req.task.labels : [],
+			reporter: new mongoose.Types.ObjectId(req.user._id),
+			comments: req.body.comments ? req.task.comments : [],
+			attachments: req.body.attachments ? req.task.attachments : [],
+		})
+		const isTaskSaved = await task.save()
+		if (!isTaskSaved) return Promise.reject('failed to save task !')
+		req.toBoard.lists[req.toListIndex].tasks = [...req.toBoard.lists[req.toListIndex].tasks, task._id]
+		const isBoardSaved = await req.toBoard.save()
+		if (!isBoardSaved) return Promise.reject('failed to save board !')
+		return res.json({ error: false, message: 'task copied successfully !' })
+	} catch (error) {
+		handleError(error, res)
+	}
 }
 
 exports.handleGetTasksByList = async (req, res) => {
@@ -184,16 +187,20 @@ exports.handleAttachmentMakeCover = async (req, res) => {
 }
 
 exports.handleCreateTaskComment = async (req, res) => {
-	req.task.comments.push({
-		_id: new mongoose.Types.ObjectId(),
-		comment: req.body.comment,
-		creator: req.user._id,
-	})
-	const task = await req.task.save()
-	if (!task) return res.json({ error: true, message: 'failed to create comment !' })
-	return res.json({
-		error: false,
-		data: task,
-		message: 'comment created succesfully !',
-	})
+	try {
+		req.task.comments.push({
+			_id: new mongoose.Types.ObjectId(),
+			comment: req.body.comment,
+			creator: req.user._id,
+		})
+		const task = await req.task.save()
+		if (!task) return res.json({ error: true, message: 'failed to create comment !' })
+		return res.json({
+			error: false,
+			data: task,
+			message: 'comment created succesfully !',
+		})
+	} catch (error) {
+		handleError(error, res)
+	}
 }

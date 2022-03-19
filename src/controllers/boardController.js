@@ -10,7 +10,7 @@ const { matchedData } = require('express-validator')
 const Labels = require('../utils/samplelabels')
 const User = require('../models/User')
 
-exports.getBoard = async (req, res) => {
+exports.handleGetBoardById = async (req, res) => {
 	try {
 		const board = await Board.findById(req.params.boardId)
 		return res.json({
@@ -22,7 +22,7 @@ exports.getBoard = async (req, res) => {
 	}
 }
 
-exports.handleIndexAllUserBoards = async (req, res) => {
+exports.handleGetAllUserBoards = async (req, res) => {
 	try {
 		const allboards = await Board.find({ 'members._id': req.user._id }).exec()
 		const createdBoards = [],
@@ -112,37 +112,45 @@ exports.handleDeleteBoard = async (req, res) => {
 }
 
 exports.handleInviteUser = async (req, res) => {
-	const promises = req.body.emails.map(async (email) => {
-		const inviteToken = await sign({ email, boardId: req.params.boardId, board: req.board.name })
-		return mail(
-			email,
-			'Board Invite',
-			'you are invited to the trello board !',
-			`<a href=${process.env.FRONTEND_SERVER_ADDR}/accept-invitation/${inviteToken}>
+	try {
+		const promises = req.body.emails.map(async (email) => {
+			const inviteToken = sign({ email, boardId: req.params.boardId, board: req.board.name })
+			return mail(
+				email,
+				'Board Invite',
+				'you are invited to the trello board !',
+				`<a href=${process.env.FRONTEND_SERVER_ADDR}/accept-invitation/${inviteToken}>
 				Accept Invitation
 			</a>`
-		)
-	})
-	const settled = await Promise.allSettled(promises)
-	return res.json({ error: false, message: 'invites sent !', data: settled })
+			)
+		})
+		const settled = await Promise.allSettled(promises)
+		return res.json({ error: false, message: 'invites sent !', data: settled })
+	} catch (error) {
+		handleError(error, res)
+	}
 }
 
 exports.handleAcceptInvitation = async (req, res) => {
-	const member = {
-		_id: req.user._id,
-		name: req.user.name,
-		email: req.user.email,
-		permissions: MEMBER_PERMISSIONS,
+	try {
+		const member = {
+			_id: req.user._id,
+			name: req.user.name,
+			email: req.user.email,
+			permissions: MEMBER_PERMISSIONS,
+		}
+
+		const isUserMember = req.board.members.findIndex((mem) => mem._id == req.user._id)
+
+		if (isUserMember >= 0) return res.json({ error: true, message: 'user is already a member !' })
+
+		req.board.members.push(member)
+		await req.board.save()
+
+		return res.json({ error: false, message: `you have been added as a collaborator to ${req.board.name}` })
+	} catch (error) {
+		handleError(error, res)
 	}
-
-	const isUserMember = req.board.members.findIndex((mem) => mem._id == req.user._id)
-
-	if (isUserMember >= 0) return res.json({ error: true, message: 'user is already a member !' })
-
-	req.board.members.push(member)
-	await req.board.save()
-
-	return res.json({ error: false, message: `you have been added as a collaborator to ${req.board.name}` })
 }
 
 exports.handleSearchMembers = async (req, res) => {

@@ -39,7 +39,7 @@ router.get(
 )
 router.post(
 	'/copy/:fromBoardId/:toBoardId/:fromListId/:toListId/:fromTaskId',
-	// checkPerms('task', 'update'),
+	// checkPerms('task', 'update', { boardId: 'fromBoardId' }),
 	validate(validateCopyTask),
 	handleCopyTask
 )

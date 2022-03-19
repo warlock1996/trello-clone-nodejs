@@ -1,7 +1,6 @@
 const User = require('../models/User')
 const { getHash } = require('../utils/hash')
 const { mail } = require('../utils/mailer')
-const { log } = require('../utils/logger')
 const { sign } = require('../utils/jwt')
 const { handleError } = require('../utils/error')
 
@@ -27,12 +26,8 @@ exports.handleSignUp = async (req, res) => {
 			error: false,
 			message: `Please check your email (${email}) inbox for account activation link !`,
 		})
-	} catch (err) {
-		console.error(err.message)
-		log(err, req)
-		res.status(500).json({
-			error: 'server error',
-		})
+	} catch (error) {
+		handleError(error, res)
 	}
 }
 
@@ -51,11 +46,7 @@ exports.handleLogin = async (req, res) => {
 			token: encodedToken,
 		})
 	} catch (error) {
-		console.error(err.message)
-		log(err, req)
-		res.status(500).json({
-			error: 'server error',
-		})
+		handleError(error, res)
 	}
 }
 
@@ -68,12 +59,8 @@ exports.handleActivation = async (req, res) => {
 			error: false,
 			message: `Email verified ${req.user.email}, Account activated !`,
 		})
-	} catch (err) {
-		console.error(err)
-		log(err)
-		res.status(500).json({
-			error: 'server error',
-		})
+	} catch (error) {
+		handleError(error, res)
 	}
 }
 

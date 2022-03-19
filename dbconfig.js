@@ -8,7 +8,7 @@ const getConnection = async () => {
 		console.log('DB connected !')
 		return db
 	} catch (error) {
-		console.error(error.message)
+		console.error('Error:', error.message)
 	}
 }
 module.exports = getConnection

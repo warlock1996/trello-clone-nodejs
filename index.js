@@ -1,21 +1,11 @@
+require('./envconfig')()
 const express = require('express')
-const bodyParser = require('body-parser')
+const injectMiddleware = require('./src/utils/inject')
 const connectDB = require('./dbconfig')
-const configureEnv = require('./envconfig')
-const routes = require('./src/routes/index')
-const cors = require('cors')
 
 const app = express()
-
-// setup env
-configureEnv()
-
 // inject middlewares
-app.use('/static', express.static('uploads'))
-app.use(cors())
-app.use(bodyParser.json())
-app.use(routes)
-
+injectMiddleware(app)
 // connect db first
 connectDB().then(async () => {
 	app.listen(process.env.PORT, () => {
