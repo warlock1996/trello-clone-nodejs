@@ -15,7 +15,7 @@ exports.handleCreateList = async (req, res) => {
 		const list = new List({
 			name: req.body.name,
 		})
-		board.lists.push(list)
+		req.board.lists.push(list)
 		await req.board.save()
 		return res.json({
 			error: false,
@@ -29,7 +29,7 @@ exports.handleCreateList = async (req, res) => {
 exports.handleEditList = async (req, res) => {
 	try {
 		req.board.lists[req.listIndex]['name'] = req.body.name
-		await board.save()
+		await req.board.save()
 		return res.json({
 			error: false,
 			data: req.board.lists[req.listIndex],

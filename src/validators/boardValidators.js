@@ -8,7 +8,7 @@ exports.validateCreateBoard = [
 	body('name')
 		.exists()
 		.isString()
-		.isLength({ min: '3', max: '20' })
+		.isLength({ min: '1', max: '20' })
 		.custom(async (value, { req }) => {
 			const board = await Board.findOne({ userId: req.user._id, name: value })
 			if (board) return Promise.reject('board with this name already exists !')
@@ -34,7 +34,7 @@ exports.validateEditBoard = [
 		.bail()
 		.isString()
 		.bail()
-		.isLength({ min: '3', max: '20' })
+		.isLength({ min: '1', max: '20' })
 		.bail()
 		.custom(async (value, { req }) => {
 			const board = await Board.findOne({ name: value })

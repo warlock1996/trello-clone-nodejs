@@ -32,7 +32,7 @@ exports.validateCreateList = [
 		.exists()
 		.bail()
 		.isString()
-		.isLength({ min: '2', max: '50' })
+		.isLength({ min: '1', max: '50' })
 		.custom(async (value, { req }) => {
 			const boardLists = req.board.lists
 			if (boardLists.findIndex((l) => l.name === value) >= 0) {
@@ -66,7 +66,7 @@ exports.validateEditList = [
 	body('name')
 		.exists()
 		.isString()
-		.isLength({ min: '3', max: '20' })
+		.isLength({ min: '1', max: '20' })
 		.custom((value, { req }) => {
 			if (req.board.lists[req.listIndex]['name'] === value) throw new Error('list name already exists for this board !')
 			return true

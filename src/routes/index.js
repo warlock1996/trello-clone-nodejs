@@ -12,7 +12,7 @@ router.use('/api/account', authRoutes)
 router.use('/api/board', checkAuth, boardRoutes)
 router.use('/api/list', checkAuth, listRoutes)
 router.use('/api/task', checkAuth, taskRoutes)
-router.use('/*', (req, res) => {
+router.use('/api/*', (req, res) => {
 	return res.json({
 		error: true,
 		message: 'This route may have been changed or it doesnt exist at all !',

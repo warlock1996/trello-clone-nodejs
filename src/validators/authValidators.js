@@ -4,7 +4,7 @@ const { getHash } = require('../utils/hash')
 const { verify } = require('../utils/jwt')
 
 exports.validateSignUp = [
-	body('name').exists().isString().isLength({ min: '3', max: '20' }),
+	body('name').exists().isString().isLength({ min: '2', max: '20' }),
 	body('email')
 		.exists()
 		.bail()

@@ -114,7 +114,7 @@ exports.handleDeleteBoard = async (req, res) => {
 exports.handleInviteUser = async (req, res) => {
 	try {
 		const promises = req.body.emails.map(async (email) => {
-			const inviteToken = sign({ email, boardId: req.params.boardId, board: req.board.name })
+			const inviteToken = await sign({ email, boardId: req.params.boardId, board: req.board.name })
 			return mail(
 				email,
 				'Board Invite',

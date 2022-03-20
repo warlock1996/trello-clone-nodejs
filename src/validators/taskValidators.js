@@ -106,7 +106,7 @@ exports.validateEditTask = [
 		.optional()
 		.exists({ checkNull: false, checkFalsy: false })
 		.isString()
-		.isLength({ min: 0, max: 10000 }),
+		.isLength({ min: 1, max: 10000 }),
 	body('members')
 		.optional()
 		.exists()

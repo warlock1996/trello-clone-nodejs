@@ -22,7 +22,6 @@ const {
 	handleSearchMembers,
 } = require('../controllers/boardController')
 
-router.get('/:boardId', checkPerms('board', 'read'), handleGetBoardById)
 router.post('/create', validate(validateCreateBoard), handleCreateBoard)
 router.post('/edit/:boardId', checkPerms('board', 'update'), validate(validateEditBoard), handleEditBoard)
 router.delete('/delete/:boardId', checkPerms('board', 'delete'), validate(validateDeleteBoard), handleDeleteBoard)
@@ -35,5 +34,6 @@ router.get(
 	validate(validateSearchMembers),
 	handleSearchMembers
 )
+router.get('/:boardId', checkPerms('board', 'read'), handleGetBoardById)
 
 module.exports = router
