@@ -5,6 +5,6 @@ module.exports = configureEnv = () => {
 		const result = dotenv.config()
 		if (result.error) throw result.error
 	} catch (error) {
-		console.error(err.message)
+		console.error(error.message)
 	}
 }

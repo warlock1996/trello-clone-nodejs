@@ -125,7 +125,8 @@ exports.handleInviteUser = async (req, res) => {
 			)
 		})
 		const settled = await Promise.allSettled(promises)
-		return res.json({ error: false, message: 'invites sent !', data: settled })
+		const acceptedEmails = settled.filter(({ accepted }) => req.body.emails.includes(accepted))
+		return res.json({ error: false, message: 'invites sent to the following emails !', data: acceptedEmails })
 	} catch (error) {
 		handleError(error, res)
 	}
