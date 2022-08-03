@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const { Board } = require('../models/Board')
 const { Task } = require('../models/Task')
-const { mail } = require('../utils/mailer')
+const mail = require('../utils/mailer')
 const { sign } = require('../utils/jwt')
 const { handleError } = require('../utils/error')
 

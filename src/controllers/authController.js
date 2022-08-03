@@ -1,6 +1,6 @@
 const User = require('../models/User')
 const { getHash } = require('../utils/hash')
-const { mail } = require('../utils/mailer')
+const mail = require('../utils/mailer')
 const { sign } = require('../utils/jwt')
 const { handleError } = require('../utils/error')
 
@@ -27,7 +27,8 @@ exports.handleSignUp = async (req, res) => {
 			message: `Please check your email (${email}) inbox for account activation link !`,
 		})
 	} catch (error) {
-		handleError(error, res)
+		console.log(error)
+		// handleError(error, res)
 	}
 }
 

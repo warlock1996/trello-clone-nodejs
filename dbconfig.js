@@ -3,7 +3,7 @@ let db
 const getConnection = async () => {
 	try {
 		if (db) return db
-		const URI = process.env.NODE_ENV === 'development' ? process.env.MONGO_URI_DEV : process.env.MONGO_URI_PROD
+		const URI = process.env.NODE_ENV === 'development' ? process.env.MONGO_URI_PROD : process.env.MONGO_URI_PROD
 		db = await mongoose.connect(URI)
 		console.log('DB connected !')
 		return db
