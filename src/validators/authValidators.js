@@ -29,7 +29,7 @@ exports.validateLogin = [
 		.custom(async (value, { req }) => {
 			const user = await User.findOne({ email: value })
 			if (!user) return Promise.reject('Account not found !')
-			if (user.email_verified_at === null) return Promise.reject('Email not verified !')
+			// if (user.email_verified_at === null) return Promise.reject('Email not verified !')
 			req.user = user
 		}),
 	body('password')
